@@ -44,7 +44,7 @@ export default function CandidateDashboard() {
     fetchTests();
   }, [dispatch]);
 
-  const filteredExams = exams.filter(exam => 
+  const filteredExams = exams.filter(exam =>
     exam.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -55,8 +55,8 @@ export default function CandidateDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <h1 className="text-2xl font-bold text-slate-800">Online Tests</h1>
           <div className="relative w-full md:w-96 group">
-            <Input 
-              placeholder="Search by exam title" 
+            <Input
+              placeholder="Search by exam title"
               className="pl-4 pr-10 h-11 border-slate-200 rounded-lg focus-visible:ring-[#6366f1] focus-visible:border-[#6366f1] transition-all bg-white text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -109,10 +109,10 @@ export default function CandidateDashboard() {
                   </div>
                 </CardContent>
                 <CardFooter className="p-0 mt-auto">
-                  <Link 
+                  <Link
                     href={`/candidate/exam/${exam.id}`}
                     className={cn(
-                      buttonVariants({ variant: "outline" }), 
+                      buttonVariants({ variant: "outline" }),
                       "h-11 px-10 text-[15px] font-bold border-indigo-100 text-[#6366f1] hover:bg-indigo-50 hover:text-[#6366f1] hover:border-indigo-200 rounded-xl transition-all"
                     )}
                   >
@@ -137,7 +137,7 @@ export default function CandidateDashboard() {
               <ChevronRight className="h-4 w-4 text-[#6366f1]" />
             </Button>
           </div>
-          
+
           <div className="flex items-center gap-4 text-slate-500 text-sm font-medium">
             <span>Online Test Per Page</span>
             <Select value={itemsPerPage} onValueChange={(v) => { if (v) setItemsPerPage(v); }}>

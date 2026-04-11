@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   // "employer" or "candidate"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Exam {
+  id              String      @id @default(cuid())
+  title           String
+  totalCandidates Int
+  totalSlots      Int
+  questionSets    Int
+  questionType    String
+  startTime       DateTime
+  endTime         DateTime
+  duration        Int         // in minutes
+  negativeMarking Boolean     @default(false)
+  questions       Question[]
+  candidates      Candidate[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  examId        String
+  exam          Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  title         String
+  type          String   // "radio", "checkbox", "text"
+  score         Int      @default(1)
+  options       String[] // JSON string or array of options
+  correctAnswer String?  // Optional, could be comma-separated for checkbox
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Candidate {
+  id         String   @id @default(cuid())
+  examId     String
+  exam       Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+  name       String
+  email      String
+  status     String   @default("pending") // "pending", "completed", "not-set"
+  score      Int?
+  attendedAt DateTime?
+  results    Result[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([examId, email])
+}
+
+model Result {
+  id              String   @id @default(cuid())
+  candidateId     String
+  candidate       Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  questionId      String
+  answer          String   // JSON string of the answer
+  isCorrect       Boolean?
+  tabSwitches     Int      @default(0)
+  fullscreenExits Int      @default(0)
+  createdAt       DateTime @default(now())
+}

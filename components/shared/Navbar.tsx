@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { Briefcase, User, LogOut } from 'lucide-react';
 
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import logoNav from '@/app/assets/logoNav.png';
 
 export default function Navbar() {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -17,18 +19,19 @@ export default function Navbar() {
   const isAuthPage = pathname?.includes('/login');
 
   return (
-    <nav className="border-b bg-white backdrop-blur sticky top-0 z-50">
+    <nav className="border-b backdrop-blur sticky top-0 z-50">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         {/* Left: Logo */}
         <div className="flex items-center">
           <Link href="/" className="flex items-center gap-2">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1">
-                <span className="text-2xl font-black text-[#3b3db9] leading-none tracking-tight">AKIJ</span>
-                <span className="text-xs font-bold text-white bg-slate-500 px-1 py-0.5 rounded-xs leading-none">RESOURCE</span>
-              </div>
-              <span className="text-[8px] font-medium tracking-widest text-slate-500 uppercase">Towards success</span>
-            </div>
+            <Image
+              src={logoNav}
+              alt="Akij Resource"
+              width={116}
+              height={32}
+              className="h-6 lg:h-8  w-auto object-contain"
+              priority
+            />
           </Link>
         </div>
 
@@ -43,14 +46,14 @@ export default function Navbar() {
             <>
               {!isAuthenticated ? (
                 <div className="flex gap-2">
-                  <Link 
-                    href="/employer/login" 
+                  <Link
+                    href="/employer/login"
                     className={buttonVariants({ variant: "ghost" })}
                   >
                     Employer
                   </Link>
-                  <Link 
-                    href="/candidate/login" 
+                  <Link
+                    href="/candidate/login"
                     className={buttonVariants({ variant: "outline", className: "rounded-lg" })}
                   >
                     Candidate

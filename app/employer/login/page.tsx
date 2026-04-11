@@ -64,9 +64,9 @@ export default function EmployerLoginPage() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 flex flex-col items-center justify-center p-4 bg-[#f8f9fa]">
+      <main className="flex-1 flex flex-col items-center justify-center p-4">
         <h2 className="text-3xl font-bold text-slate-700 mb-8">Sign In</h2>
-        <Card 
+        <Card
           className="shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 bg-white flex flex-col w-[343px] h-[341px] md:w-[571px] md:h-[373px] rounded-[16px] pt-[24px] px-[16px] pb-[24px] md:pt-[32px] md:px-[32px] md:pb-[40px] gap-[10px]"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
@@ -76,7 +76,7 @@ export default function EmployerLoginPage() {
                   <AlertDescription className="text-xs">{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               {/* Email Field */}
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="email" className="text-[14px] font-semibold text-slate-700 ml-0.5">Email</Label>
@@ -119,9 +119,9 @@ export default function EmployerLoginPage() {
               </div>
             </CardContent>
             <CardFooter className="p-0 mt-auto">
-              <Button 
-                type="submit" 
-                className="w-full h-[60px] text-[18px] font-bold bg-[#6366f1] hover:bg-[#5a5cd8] text-white rounded-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[0.99]" 
+              <Button
+                type="submit"
+                className="w-full h-[48px] mb-6 text-[18px] font-bold bg-primary hover:opacity-90 text-white rounded-lg transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (

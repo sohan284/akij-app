@@ -19,14 +19,14 @@ export default function Home() {
               A comprehensive platform for employers to create assessments and candidates to demonstrate their skills in a secure environment.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link 
-                href="/employer/login" 
+              <Link
+                href="/employer/login"
                 className={cn(buttonVariants({ size: "lg" }), "rounded-full px-8 h-12 text-lg shadow-lg hover:shadow-xl transition-all")}
               >
                 I am an Employer
               </Link>
-              <Link 
-                href="/candidate/login" 
+              <Link
+                href="/candidate/login"
                 className={cn(buttonVariants({ size: "lg", variant: "outline" }), "rounded-full px-8 h-12 text-lg shadow-sm")}
               >
                 I am a Candidate
@@ -72,19 +72,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="border-t py-12 px-4 bg-muted/30">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center space-x-2">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-              A
-            </div>
-            <span className="font-bold">Akij Assessment</span>
-          </div>
-          <p className="text-muted-foreground text-sm">
-            © 2026 Akij Assessment. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </>
   );
 }

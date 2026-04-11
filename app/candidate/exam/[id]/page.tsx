@@ -61,10 +61,21 @@ export default function ExamScreen() {
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitted(true);
-    // In a real app, send answers to server
-    toast.success('Assessment submitted successfully!');
+    try {
+      const { user } = (window as any).store?.getState().auth || {};
+      await axios.post(`/api/tests/${id}/submit`, {
+        candidateEmail: user?.email || 'candidate@akij.com', // Fallback for demo
+        answers,
+        tabSwitches,
+        fullscreenExits,
+      });
+      toast.success('Assessment submitted successfully!');
+    } catch (error) {
+      console.error('Failed to submit exam', error);
+      toast.error('Failed to submit assessment. Please contact support.');
+    }
     setTimeout(() => router.push('/candidate/dashboard'), 3000);
-  }, [router]);
+  }, [id, router, answers, tabSwitches, fullscreenExits]);
 
   useEffect(() => {
     if (!isExamStarted || isSubmitted) return;
@@ -150,7 +161,7 @@ export default function ExamScreen() {
   const seconds = timeLeft % 60;
 
   return (
-    <div className="flex-1 flex flex-col bg-[#f8fafc] min-h-screen">
+    <div className="flex-1 flex flex-col min-h-screen">
       {/* Header Bar */}
       <div className="container mx-auto pt-6 px-4">
         <div className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm border border-slate-100">
@@ -168,8 +179,9 @@ export default function ExamScreen() {
       <main className="flex-1 container mx-auto py-8 px-4 flex flex-col">
         <Card className="bg-white rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.02)] p-8 md:p-12 flex-1 flex flex-col">
           <CardHeader className="p-0 mb-8">
-            <CardTitle className="text-2xl font-bold text-slate-800 leading-tight">
-              Q{currentQuestionIndex + 1}. {currentQuestion.title}
+            <CardTitle className="text-2xl font-bold text-slate-800 leading-tight flex gap-2">
+              <span>Q{currentQuestionIndex + 1}.</span>
+              <div dangerouslySetInnerHTML={{ __html: currentQuestion.title }} />
             </CardTitle>
           </CardHeader>
 
@@ -184,7 +196,7 @@ export default function ExamScreen() {
                   <div key={i} className={`flex items-center space-x-4 p-5 rounded-2xl border-2 transition-all cursor-pointer ${answers[currentQuestion.id] === opt ? 'border-[#6366f1] bg-indigo-50/30' : 'border-slate-100 bg-white hover:border-indigo-100'}`}>
                     <RadioGroupItem value={opt} id={`q-${currentQuestion.id}-opt-${i}`} className="h-5 w-5 border-2 text-[#6366f1]" />
                     <Label htmlFor={`q-${currentQuestion.id}-opt-${i}`} className="flex-1 cursor-pointer text-lg font-medium text-slate-700">
-                      {opt}
+                      <div dangerouslySetInnerHTML={{ __html: opt }} />
                     </Label>
                   </div>
                 ))}
