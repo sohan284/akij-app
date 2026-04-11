@@ -58,18 +58,7 @@ export default function Navbar() {
             <>
               {!isAuthenticated ? (
                 <div className="flex gap-2">
-                  <Link
-                    href="/employer/login"
-                    className={buttonVariants({ variant: "ghost", size: "sm" })}
-                  >
-                    Employer
-                  </Link>
-                  <Link
-                    href="/candidate/login"
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
-                    Candidate
-                  </Link>
+
                 </div>
               ) : (
                 <div className="flex items-center gap-4">

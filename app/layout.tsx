@@ -3,6 +3,7 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/lib/redux/provider";
 import { Toaster } from 'sonner';
+import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 
 const inter = Inter({
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-[#F9FAFB] flex flex-col">
         <ReduxProvider>
+          <Navbar />
           <div className="flex-1 flex flex-col">
             {children}
           </div>

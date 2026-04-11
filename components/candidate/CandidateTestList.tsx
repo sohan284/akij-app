@@ -82,9 +82,9 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {currentExams.map((exam) => (
-            <Card key={exam.id} className="bg-white rounded-[20px] p-6 hover:shadow-md transition-shadow border border-slate-100 flex flex-col h-[200px]">
+            <Card key={exam.id} className="bg-white rounded-[20px] p-6 hover:shadow-md transition-shadow border border-slate-100 flex flex-col min-h-[200px]">
               <div className="flex flex-col h-full gap-5">
                 <CardTitle className="text-xl font-bold text-[#1E293B] line-clamp-2 min-h-[56px] leading-[1.4]">
                   {exam.title}
@@ -123,9 +123,9 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
       {filteredExams.length > 0 && (
         <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="icon-xs" 
+            <Button
+              variant="outline"
+              size="icon-xs"
               className="border-slate-200"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -135,9 +135,9 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
             <Button variant="default" size="xs">
               {currentPage}
             </Button>
-            <Button 
-              variant="outline" 
-              size="icon-xs" 
+            <Button
+              variant="outline"
+              size="icon-xs"
               className="border-slate-200 text-primary"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}

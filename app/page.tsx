@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Navbar from '@/components/shared/Navbar';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +7,6 @@ import { Briefcase, Users, LayoutDashboard, Clock } from 'lucide-react';
 export default function Home() {
   return (
     <>
-      <Navbar />
       <main className="flex-1">
         <section className="py-24 px-4 bg-linear-to-b from-primary/5 via-background to-background">
           <div className="container mx-auto text-center">
