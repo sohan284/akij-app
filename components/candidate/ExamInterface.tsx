@@ -118,7 +118,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
               Congratulations! {user?.email?.split('@')[0] ?? 'Candidate'}, You have completed your exam for <span className="font-semibold text-slate-700">{exam.title}</span>. Thank you for participating.
             </p>
             <Button
-              variant="outline"
+              variant="ghost"
               size="default"
               onClick={() => router.push('/candidate/dashboard')}
               className="mx-auto"
@@ -227,7 +227,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                   </div>
                   <Textarea
                     placeholder="Type your answer here.."
-                    className="flex-1 border-none shadow-none focus-visible:ring-0 text-[14px] md:text-[16px] p-4 bg-transparent resize-none leading-relaxed text-slate-800"
+                    className="flex-1 border-none shadow-none focus-visible:ring-0 text-[14px] md:text-[16px] p-4 bg-transparent resize-none leading-relaxed text-slate-800 min-h-[100px]"
                     value={answers[exam.questions[currentQuestionIndex].id] as string || ''}
                     onChange={(e) => setAnswers({ ...answers, [exam.questions[currentQuestionIndex].id]: e.target.value })}
                   />
@@ -274,7 +274,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
               Dear {user?.email?.split('@')[0] ?? 'Candidate'}, Your exam time has been finished. Thank you for participating.
             </p>
             <Button
-              variant="outline"
+              variant="ghost"
               size="default"
               onClick={() => router.push('/candidate/dashboard')}
             >

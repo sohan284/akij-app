@@ -303,7 +303,7 @@ export default function CreateTestForm() {
             </div>
           </div>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={() => router.push('/employer/dashboard')}
           >
@@ -384,7 +384,7 @@ export default function CreateTestForm() {
                 <div className="space-y-2">
                   <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
                   <Select onValueChange={(v) => setValue('totalSlots', v ?? '')} defaultValue={watch('totalSlots') as string}>
-                    <SelectTrigger className="h-14 rounded-xl border-slate-200 px-4">
+                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                       <SelectValue placeholder="Select slots" />
                     </SelectTrigger>
                     <SelectContent>
@@ -397,7 +397,7 @@ export default function CreateTestForm() {
                 <div className="space-y-2">
                   <Label className="text-sm font-bold text-slate-700">Question Sets <span className="text-red-500">*</span></Label>
                   <Select onValueChange={(v) => setValue('questionSets', v ?? '')} defaultValue={watch('questionSets') as string}>
-                    <SelectTrigger className="h-14 rounded-xl border-slate-200 px-4">
+                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                       <SelectValue placeholder="Select sets" />
                     </SelectTrigger>
                     <SelectContent>
@@ -410,7 +410,7 @@ export default function CreateTestForm() {
                 <div className="space-y-2">
                   <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
                   <Select onValueChange={(v) => setValue('questionType', v ?? '')} defaultValue={watch('questionType') as string}>
-                    <SelectTrigger className="h-14 rounded-xl border-slate-200 px-4">
+                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -457,7 +457,7 @@ export default function CreateTestForm() {
             <div className="p-6 md:p-8 flex justify-between gap-4">
               <Button
                 variant="outline"
-                size="lg"
+                size="xl"
                 className="flex-1"
                 onClick={() => router.push('/employer/dashboard')}
               >
@@ -465,7 +465,7 @@ export default function CreateTestForm() {
               </Button>
               <Button
                 variant="default"
-                size="lg"
+                size="xl"
                 className="flex-1"
                 onClick={async () => {
                   const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
@@ -496,7 +496,7 @@ export default function CreateTestForm() {
 
           <Button
             variant="default"
-            size="lg"
+            size="xl"
             className="w-full"
             onClick={openAddModal}
           >
@@ -513,7 +513,7 @@ export default function CreateTestForm() {
             <div className="flex justify-between gap-4">
               <Button
                 variant="outline"
-                size="lg"
+                size="xl"
                 className="flex-1"
                 onClick={() => setStep(1)}
               >
@@ -521,7 +521,7 @@ export default function CreateTestForm() {
               </Button>
               <Button
                 variant="default"
-                size="lg"
+                size="xl"
                 className="flex-1"
                 onClick={handleSubmit(onSubmit)}
               >
@@ -619,12 +619,12 @@ export default function CreateTestForm() {
                     </div>
                   </div>
                 ))}
-                <Button 
-                  type="button" 
-                  variant="ghost" 
+                <Button
+                  type="button"
+                  variant="ghost"
                   size="sm"
                   className="ml-10 text-primary hover:bg-primary/5"
-                  onClick={() => setCurrentModalQuestion({...currentModalQuestion, options: [...currentModalQuestion.options, {text: '', isCorrect: false}]})}
+                  onClick={() => setCurrentModalQuestion({ ...currentModalQuestion, options: [...currentModalQuestion.options, { text: '', isCorrect: false }] })}
                 >
                   <Plus size={16} className="mr-2" /> Add Option
                 </Button>

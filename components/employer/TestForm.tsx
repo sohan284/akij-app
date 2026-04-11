@@ -314,7 +314,7 @@ export default function CreateTestPage() {
               </div>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => router.push('/employer/dashboard')}
               >
@@ -387,8 +387,7 @@ export default function CreateTestPage() {
                         <Input
                           {...register('title')}
                           placeholder="Enter online test title"
-                          className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4"
                         />
                         {errors.title && <p className="text-xs text-red-500 font-medium">{errors.title.message}</p>}
                       </div>
@@ -399,8 +398,7 @@ export default function CreateTestPage() {
                           type="number"
                           {...register('totalCandidates')}
                           placeholder="Enter total candidates"
-                          className="rounded-xl border-slate-200 focus:ring-primary focus:border-primary w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4"
                         />
                         {errors.totalCandidates && <p className="text-xs text-red-500 font-medium">{errors.totalCandidates.message}</p>}
                       </div>
@@ -408,7 +406,7 @@ export default function CreateTestPage() {
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
                         <Select onValueChange={(v) => setValue('totalSlots', v as string)} defaultValue={watchAllFields.totalSlots}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select total slots" />
                           </SelectTrigger>
                           <SelectContent>
@@ -426,7 +424,7 @@ export default function CreateTestPage() {
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Question Set <span className="text-red-500">*</span></Label>
                         <Select onValueChange={(v) => setValue('questionSets', v as string)} defaultValue={watchAllFields.questionSets}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select total question set" />
                           </SelectTrigger>
                           <SelectContent>
@@ -440,7 +438,7 @@ export default function CreateTestPage() {
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
                         <Select onValueChange={(v) => setValue('questionType', v as string)} defaultValue={watchAllFields.questionType}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select question type" />
                           </SelectTrigger>
                           <SelectContent>
@@ -457,8 +455,7 @@ export default function CreateTestPage() {
                         <Input
                           type="datetime-local"
                           {...register('startTime')}
-                          className="rounded-xl border-slate-200 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 px-4"
                         />
                         {errors.startTime && <p className="text-xs text-red-500 font-medium">{errors.startTime.message}</p>}
                       </div>
@@ -468,8 +465,7 @@ export default function CreateTestPage() {
                         <Input
                           type="datetime-local"
                           {...register('endTime')}
-                          className="rounded-xl border-slate-200 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 px-4"
                         />
                         {errors.endTime && <p className="text-xs text-red-500 font-medium">{errors.endTime.message}</p>}
                       </div>
@@ -480,8 +476,7 @@ export default function CreateTestPage() {
                           type="number"
                           {...register('duration')}
                           placeholder="Duration Time"
-                          className="rounded-xl border-slate-200 bg-slate-50 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 bg-slate-50 px-4"
                         />
                         {errors.duration && <p className="text-xs text-red-500 font-medium">{errors.duration.message}</p>}
                       </div>
@@ -493,7 +488,7 @@ export default function CreateTestPage() {
                   <div className="p-6 md:p-8 flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      size="lg"
+                      size="xl"
                       className="flex-1"
                       onClick={() => router.push('/employer/dashboard')}
                     >
@@ -501,7 +496,7 @@ export default function CreateTestPage() {
                     </Button>
                     <Button
                       variant="default"
-                      size="lg"
+                      size="xl"
                       className="flex-1"
                       onClick={async () => {
                         const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
@@ -540,7 +535,7 @@ export default function CreateTestPage() {
                 <div className="pt-4">
                   <Button
                     variant="default"
-                    size="lg"
+                    size="xl"
                     className="w-full"
                     onClick={openAddModal}
                   >
@@ -558,7 +553,7 @@ export default function CreateTestPage() {
                   <div className="flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      size="lg"
+                      size="xl"
                       className="flex-1"
                       onClick={() => setStep(1)}
                     >
@@ -566,7 +561,7 @@ export default function CreateTestPage() {
                     </Button>
                     <Button
                       variant="default"
-                      size="lg"
+                      size="xl"
                       className="flex-1"
                       onClick={(e) => {
                         e.preventDefault();
