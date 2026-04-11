@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { testService } from '@/lib/services/test-service';
+import { candidateSchema } from '@/lib/validations/test-schema';
 
 export async function GET(
   request: Request,
@@ -7,14 +8,7 @@ export async function GET(
 ) {
   const { id } = await params;
   try {
-    const candidates = await prisma.candidate.findMany({
-      where: {
-        examId: id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const candidates = await testService.getCandidatesByExamId(id);
     return NextResponse.json(candidates);
   } catch (error) {
     console.error('Fetch candidates error:', error);
@@ -29,17 +23,16 @@ export async function POST(
   const { id } = await params;
   try {
     const body = await request.json();
-    const { name, email } = body;
+    const result = candidateSchema.safeParse(body);
 
-    const newCandidate = await prisma.candidate.create({
-      data: {
-        examId: id,
-        name,
-        email,
-        status: 'pending',
-      },
-    });
+    if (!result.success) {
+      return NextResponse.json({ 
+        message: 'Validation failed', 
+        errors: result.error.format() 
+      }, { status: 400 });
+    }
 
+    const newCandidate = await testService.addCandidateToExam(id, result.data);
     return NextResponse.json(newCandidate, { status: 201 });
   } catch (error) {
     console.error('Create candidate error:', error);

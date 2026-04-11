@@ -60,13 +60,13 @@ export default function Navbar() {
                 <div className="flex gap-2">
                   <Link
                     href="/employer/login"
-                    className={buttonVariants({ variant: "ghost" })}
+                    className={buttonVariants({ variant: "ghost", size: "sm" })}
                   >
                     Employer
                   </Link>
                   <Link
                     href="/candidate/login"
-                    className={buttonVariants({ variant: "outline", className: "rounded-lg" })}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     Candidate
                   </Link>
@@ -80,7 +80,7 @@ export default function Navbar() {
                       {user?.role}
                     </span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-slate-100 rounded-full h-10 w-10">
+                  <Button variant="ghost" size="icon-sm" onClick={handleLogout}>
                     <LogOut className="h-5 w-5 text-slate-600" />
                   </Button>
                 </div>

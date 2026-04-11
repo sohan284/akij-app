@@ -110,10 +110,7 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
               <div className="mt-auto">
                 <Link
                   href={`/candidate/exam/${exam.id}`}
-                  className={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "h-11 px-10 text-[15px] font-bold text-primary hover:bg-indigo-50 hover:text-primary hover:border-indigo-200 rounded-xl transition-all"
-                  )}
+                  className={buttonVariants({ variant: "outline", size: "default" })}
                 >
                   Start
                 </Link>
@@ -128,25 +125,25 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
         <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 rounded-lg border border-slate-50"
+              variant="outline" 
+              size="icon-xs" 
+              className="border-slate-200"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft size={16} />
             </Button>
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-lg text-slate-600 font-medium bg-slate-50 shadow-xs border border-slate-200/50">
+            <Button variant="default" size="xs">
               {currentPage}
             </Button>
             <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-9 w-9 rounded-lg border border-slate-50"
+              variant="outline" 
+              size="icon-xs" 
+              className="border-slate-200 text-primary"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             >
-              <ChevronRight className="h-4 w-4 text-primary" />
+              <ChevronRight size={16} />
             </Button>
           </div>
 

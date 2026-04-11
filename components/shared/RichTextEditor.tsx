@@ -64,8 +64,8 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
-          className="h-8 w-8 text-slate-500 hover:text-primary"
+          size="icon-xs" 
+          className="text-slate-500 hover:text-primary"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
         >
@@ -74,8 +74,8 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
-          className="h-8 w-8 text-slate-500 hover:text-primary"
+          size="icon-xs" 
+          className="text-slate-500 hover:text-primary"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
         >
@@ -93,10 +93,10 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
+          size="icon-xs" 
           className={cn(
-            "h-8 w-8 text-slate-500 hover:text-primary transition-colors",
-            editor.isActive('bulletList') && "text-primary bg-indigo-50"
+            "text-slate-500 hover:text-primary transition-colors",
+            editor.isActive('bulletList') && "text-primary bg-primary/5"
           )}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
         >
@@ -106,10 +106,10 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
+          size="icon-xs" 
           className={cn(
-            "h-8 w-8 text-slate-500 hover:text-primary transition-colors",
-            editor.isActive('orderedList') && "text-primary bg-indigo-50"
+            "text-slate-500 hover:text-primary transition-colors",
+            editor.isActive('orderedList') && "text-primary bg-primary/5"
           )}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
@@ -119,10 +119,10 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
+          size="icon-xs" 
           className={cn(
-            "h-8 w-8 text-slate-500 hover:text-primary transition-colors",
-            editor.isActive('bold') && "text-primary bg-indigo-50"
+            "text-slate-500 hover:text-primary transition-colors",
+            editor.isActive('bold') && "text-primary bg-primary/5"
           )}
           onClick={() => editor.chain().focus().toggleBold().run()}
         >
@@ -132,10 +132,10 @@ export default function RichTextEditor({ content, onChange, placeholder, classNa
         <Button 
           type="button" 
           variant="ghost" 
-          size="icon" 
+          size="icon-xs" 
           className={cn(
-            "h-8 w-8 text-slate-500 hover:text-primary transition-colors",
-            editor.isActive('italic') && "text-primary bg-indigo-50"
+            "text-slate-500 hover:text-primary transition-colors",
+            editor.isActive('italic') && "text-primary bg-primary/5"
           )}
           onClick={() => editor.chain().focus().toggleItalic().run()}
         >

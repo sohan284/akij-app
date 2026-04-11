@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { testService } from '@/lib/services/test-service';
+import { examSchema } from '@/lib/validations/test-schema';
+import { z } from 'zod';
 
 export async function GET() {
   try {
-    const exams = await prisma.exam.findMany({
-      include: {
-        questions: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const exams = await testService.getAllExams();
     return NextResponse.json(exams);
   } catch (error) {
     console.error('Fetch exams error:', error);
@@ -21,43 +16,16 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { 
-      title, 
-      totalCandidates, 
-      totalSlots, 
-      questionSets, 
-      questionType, 
-      startTime, 
-      endTime, 
-      duration, 
-      questions 
-    } = body;
+    const result = examSchema.safeParse(body);
 
-    const newExam = await prisma.exam.create({
-      data: {
-        title,
-        totalCandidates: Number(totalCandidates),
-        totalSlots: Number(totalSlots),
-        questionSets: Number(questionSets),
-        questionType,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
-        duration: Number(duration),
-        questions: {
-          create: questions.map((q: any) => ({
-            title: q.title,
-            type: q.type,
-            score: q.score || 1,
-            options: q.options || [],
-            correctAnswer: Array.isArray(q.correctAnswer) ? q.correctAnswer.join(',') : q.correctAnswer,
-          })),
-        },
-      },
-      include: {
-        questions: true,
-      },
-    });
+    if (!result.success) {
+      return NextResponse.json({ 
+        message: 'Validation failed', 
+        errors: result.error.format() 
+      }, { status: 400 });
+    }
 
+    const newExam = await testService.createExam(result.data);
     return NextResponse.json(newExam, { status: 201 });
   } catch (error) {
     console.error('Create exam error:', error);

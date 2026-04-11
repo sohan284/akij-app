@@ -133,14 +133,16 @@ function QuestionCard({ index, question, onEdit, onRemove }: QuestionCardProps) 
         <div className="flex items-center justify-between pt-6 border-t border-slate-50">
           <Button
             variant="ghost"
-            className="text-primary font-bold text-sm gap-2 hover:bg-slate-50 px-0"
+            size="sm"
+            className="text-primary hover:bg-primary/5"
             onClick={onEdit}
           >
             Edit
           </Button>
           <Button
             variant="ghost"
-            className="text-red-400 font-bold text-sm gap-2 hover:bg-red-50 px-0"
+            size="sm"
+            className="text-red-500 hover:bg-red-50"
             onClick={onRemove}
           >
             Remove From Exam
@@ -313,8 +315,8 @@ export default function CreateTestPage() {
 
               <Button
                 variant="outline"
+                size="sm"
                 onClick={() => router.push('/employer/dashboard')}
-                className="rounded-xl px-6 h-[44px] text-slate-600 font-bold border-slate-200 hover:bg-slate-50"
               >
                 Back to Dashboard
               </Button>
@@ -332,8 +334,9 @@ export default function CreateTestPage() {
                     <h2 className="text-lg font-bold text-[#1E293B]">Basic Information</h2>
                     <Button
                       variant="ghost"
+                      size="sm"
                       onClick={() => setStep(1)}
-                      className="text-primary font-bold text-sm gap-2 hover:bg-indigo-50 px-4"
+                      className="text-primary hover:bg-primary/5 gap-2"
                     >
                       <PencilLine size={16} /> Edit
                     </Button>
@@ -490,12 +493,16 @@ export default function CreateTestPage() {
                   <div className="p-6 md:p-8 flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                      size="lg"
+                      className="flex-1"
                       onClick={() => router.push('/employer/dashboard')}
                     >
                       Cancel
                     </Button>
                     <Button
+                      variant="default"
+                      size="lg"
+                      className="flex-1"
                       onClick={async () => {
                         const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
                         if (isValid) {
@@ -504,7 +511,6 @@ export default function CreateTestPage() {
                           console.log('Step 1 Errors:', errors);
                         }
                       }}
-                      className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
                     >
                       Save & Continue
                     </Button>
@@ -533,10 +539,12 @@ export default function CreateTestPage() {
                 {/* Add Question Button at the bottom */}
                 <div className="pt-4">
                   <Button
+                    variant="default"
+                    size="lg"
+                    className="w-full"
                     onClick={openAddModal}
-                    className="w-full bg-primary hover:bg-primary/90 text-white h-[56px] rounded-[16px] font-bold text-md shadow-lg shadow-indigo-100"
                   >
-                    Add Question
+                    <Plus className="mr-2" /> Add Question
                   </Button>
                 </div>
 
@@ -550,19 +558,22 @@ export default function CreateTestPage() {
                   <div className="flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                      size="lg"
+                      className="flex-1"
                       onClick={() => setStep(1)}
                     >
                       Cancel
                     </Button>
                     <Button
+                      variant="default"
+                      size="lg"
+                      className="flex-1"
                       onClick={(e) => {
                         e.preventDefault();
                         form.handleSubmit(onSubmit, (err) => {
                           console.error('Validation Errors:', err);
                         })();
                       }}
-                      className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
                     >
                       Save & Continue
                     </Button>
@@ -704,7 +715,8 @@ export default function CreateTestPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="ml-10 text-primary font-bold text-sm gap-2 hover:bg-indigo-50"
+                    size="sm"
+                    className="ml-10 text-primary hover:bg-primary/5 gap-2"
                     onClick={() => {
                       setCurrentModalQuestion({
                         ...currentModalQuestion,
@@ -721,14 +733,15 @@ export default function CreateTestPage() {
             <div className="p-6 border-t flex justify-end gap-3 bg-slate-50/30">
               <Button
                 variant="outline"
+                size="default"
                 onClick={() => handleSaveQuestion(false)}
-                className="h-[48px] px-8 rounded-xl border-primary text-primary font-bold hover:bg-slate-50"
               >
                 Save
               </Button>
               <Button
+                variant="default"
+                size="default"
                 onClick={() => handleSaveQuestion(true)}
-                className="h-[48px] px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-indigo-100"
               >
                 Save & Add More
               </Button>

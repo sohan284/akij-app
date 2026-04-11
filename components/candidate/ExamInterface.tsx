@@ -119,8 +119,9 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
             </p>
             <Button
               variant="outline"
+              size="default"
               onClick={() => router.push('/candidate/dashboard')}
-              className="h-10 px-8 text-[14px] md:text-[16px] w-fit mx-auto rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
+              className="mx-auto"
             >
               Back to Dashboard
             </Button>
@@ -168,8 +169,8 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                 className="grid gap-3"
               >
                 {currentQuestion.options?.map((opt, i) => (
-                  <div key={i} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${answers[currentQuestion.id] === opt ? 'border-[#6366f1] bg-indigo-50/30' : 'border-slate-100 bg-white hover:border-indigo-100'}`}>
-                    <RadioGroupItem value={opt} id={`q-${currentQuestion.id}-opt-${i}`} className="h-5 w-5 border-2 text-[#6366f1]" />
+                  <div key={i} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${answers[currentQuestion.id] === opt ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-primary/20'}`}>
+                    <RadioGroupItem value={opt} id={`q-${currentQuestion.id}-opt-${i}`} className="h-5 w-5 border-2 text-primary" />
                     <Label htmlFor={`q-${currentQuestion.id}-opt-${i}`} className="flex-1 cursor-pointer text-[14px] md:text-[16px] font-medium text-slate-700">
                       <div dangerouslySetInnerHTML={{ __html: opt }} />
                     </Label>
@@ -185,7 +186,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                   const currentAnswers = Array.isArray(val) ? val : [];
                   const isChecked = currentAnswers.includes(opt);
                   return (
-                    <div key={i} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${isChecked ? 'border-[#6366f1] bg-indigo-50/30' : 'border-slate-100 bg-white hover:border-indigo-100'}`}>
+                    <div key={i} className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all cursor-pointer ${isChecked ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-primary/20'}`}>
                       <Checkbox
                         id={`q-${currentQuestion.id}-opt-${i}`}
                         checked={isChecked}
@@ -195,7 +196,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                             : currentAnswers.filter((a: string) => a !== opt);
                           setAnswers({ ...answers, [currentQuestion.id]: newAnswers });
                         }}
-                        className="h-5 w-5 rounded-md border-2 data-[state=checked]:bg-[#6366f1] data-[state=checked]:border-[#6366f1]"
+                        className="h-5 w-5 rounded-md border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <Label htmlFor={`q-${currentQuestion.id}-opt-${i}`} className="flex-1 cursor-pointer text-[14px] md:text-[16px] font-medium text-slate-700">
                         {opt}
@@ -238,14 +239,16 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
           <div className="p-0 mt-8 flex justify-between items-center">
             <Button
               variant="outline"
+              size="lg"
               onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
               disabled={currentQuestionIndex === 0}
-              className="h-12 px-6 text-[14px] md:text-[16px] font-bold text-slate-600 border-slate-200 rounded-xl hover:bg-slate-50 transition-all"
             >
               Skip this Question
             </Button>
 
             <Button
+              variant="default"
+              size="lg"
               onClick={() => {
                 if (currentQuestionIndex < exam.questions.length - 1) {
                   setCurrentQuestionIndex(prev => prev + 1);
@@ -253,7 +256,6 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                   handleSubmit();
                 }
               }}
-              className="h-12 px-8 text-[14px] md:text-[16px] font-bold bg-[#6366f1] hover:bg-[#5355d8] text-white rounded-xl shadow-lg shadow-indigo-100 transition-all"
             >
               {currentQuestionIndex < exam.questions.length - 1 ? 'Save & Continue' : 'Finish & Submit'}
             </Button>
@@ -273,8 +275,8 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
             </p>
             <Button
               variant="outline"
+              size="default"
               onClick={() => router.push('/candidate/dashboard')}
-              className="h-10 px-8 text-[14px] md:text-[16px] rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
             >
               Back to Dashboard
             </Button>

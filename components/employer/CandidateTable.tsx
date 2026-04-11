@@ -72,8 +72,8 @@ export default function CandidateTable({ exam, initialCandidates }: CandidateTab
 
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger>
-            <Button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-lg font-semibold shadow-md border-none">
-              <Plus className="mr-2 h-4 w-4" /> Add Candidate
+            <Button variant="default" size="default">
+              <Plus size={18} /> Add Candidate
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -105,8 +105,8 @@ export default function CandidateTable({ exam, initialCandidates }: CandidateTab
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-              <Button className="bg-primary hover:bg-primary/90" onClick={handleAddCandidate}>Invite Candidate</Button>
+              <Button variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+              <Button variant="default" size="sm" onClick={handleAddCandidate}>Invite Candidate</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -236,7 +236,7 @@ export default function CandidateTable({ exam, initialCandidates }: CandidateTab
                       {candidate.attendedAt ? new Date(candidate.attendedAt).toLocaleString() : '—'}
                     </TableCell>
                     <TableCell className="py-4 pr-6 text-right">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-primary">
+                      <Button variant="ghost" size="icon-xs">
                         <MoreVertical size={18} />
                       </Button>
                     </TableCell>

@@ -129,14 +129,16 @@ function QuestionCard({ index, question, onEdit, onRemove }: QuestionCardProps) 
         <div className="flex items-center justify-between pt-6 border-t border-slate-50">
           <Button
             variant="ghost"
-            className="text-primary font-bold text-sm gap-2 hover:bg-slate-50 px-0"
+            size="sm"
+            className="text-primary hover:bg-primary/5"
             onClick={onEdit}
           >
             Edit
           </Button>
           <Button
             variant="ghost"
-            className="text-red-400 font-bold text-sm gap-2 hover:bg-red-50 px-0"
+            size="sm"
+            className="text-red-500 hover:bg-red-50"
             onClick={onRemove}
           >
             Remove From Exam
@@ -302,8 +304,8 @@ export default function CreateTestForm() {
           </div>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => router.push('/employer/dashboard')}
-            className="rounded-xl px-6 h-[44px] text-slate-600 font-bold border-slate-200 hover:bg-slate-50"
           >
             Back to Dashboard
           </Button>
@@ -318,8 +320,9 @@ export default function CreateTestForm() {
               <h2 className="text-lg font-bold text-[#1E293B]">Basic Information</h2>
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => setStep(1)}
-                className="text-primary font-bold text-sm gap-2 hover:bg-indigo-50 px-4"
+                className="text-primary hover:bg-primary/5 gap-2"
               >
                 <PencilLine size={16} /> Edit
               </Button>
@@ -454,17 +457,20 @@ export default function CreateTestForm() {
             <div className="p-6 md:p-8 flex justify-between gap-4">
               <Button
                 variant="outline"
-                className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                size="lg"
+                className="flex-1"
                 onClick={() => router.push('/employer/dashboard')}
               >
                 Cancel
               </Button>
               <Button
+                variant="default"
+                size="lg"
+                className="flex-1"
                 onClick={async () => {
                   const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
                   if (isValid) setStep(2);
                 }}
-                className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
               >
                 Save & Continue
               </Button>
@@ -489,10 +495,12 @@ export default function CreateTestForm() {
           ))}
 
           <Button
+            variant="default"
+            size="lg"
+            className="w-full"
             onClick={openAddModal}
-            className="w-full bg-primary hover:bg-primary/90 text-white h-[56px] rounded-[16px] font-bold text-md shadow-lg shadow-indigo-100"
           >
-            Add Question
+            <Plus className="mr-2" /> Add Question
           </Button>
 
           <div className="flex flex-col gap-4 pt-4">
@@ -505,14 +513,17 @@ export default function CreateTestForm() {
             <div className="flex justify-between gap-4">
               <Button
                 variant="outline"
-                className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                size="lg"
+                className="flex-1"
                 onClick={() => setStep(1)}
               >
                 Cancel
               </Button>
               <Button
+                variant="default"
+                size="lg"
+                className="flex-1"
                 onClick={handleSubmit(onSubmit)}
-                className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
               >
                 Create Test
               </Button>
@@ -611,7 +622,8 @@ export default function CreateTestForm() {
                 <Button 
                   type="button" 
                   variant="ghost" 
-                  className="ml-10 text-primary font-bold"
+                  size="sm"
+                  className="ml-10 text-primary hover:bg-primary/5"
                   onClick={() => setCurrentModalQuestion({...currentModalQuestion, options: [...currentModalQuestion.options, {text: '', isCorrect: false}]})}
                 >
                   <Plus size={16} className="mr-2" /> Add Option
@@ -621,8 +633,8 @@ export default function CreateTestForm() {
           </div>
 
           <div className="p-6 border-t flex justify-end gap-3 bg-slate-50/30">
-            <Button variant="outline" onClick={() => handleSaveQuestion(false)}>Save</Button>
-            <Button onClick={() => handleSaveQuestion(true)}>Save & Add More</Button>
+            <Button variant="outline" size="sm" onClick={() => handleSaveQuestion(false)}>Save</Button>
+            <Button variant="default" size="sm" onClick={() => handleSaveQuestion(true)}>Save & Add More</Button>
           </div>
         </DialogContent>
       </Dialog>

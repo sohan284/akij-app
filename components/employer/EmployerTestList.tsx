@@ -58,12 +58,9 @@ export default function EmployerTestList({ initialExams }: EmployerTestListProps
 
         <Link
           href="/employer/create-test"
-          className={cn(
-            buttonVariants(),
-            "bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-lg font-semibold shadow-md border-none"
-          )}
+          className={buttonVariants({ variant: "default", size: "default" })}
         >
-          Create Online Test
+          <Plus className="mr-2 h-4 w-4" /> Create Online Test
         </Link>
       </div>
 
@@ -87,10 +84,7 @@ export default function EmployerTestList({ initialExams }: EmployerTestListProps
           {!searchQuery && (
             <Link
               href="/employer/create-test"
-              className={cn(
-                buttonVariants(),
-                "bg-primary hover:bg-primary/90 text-white px-10 h-[50px] rounded-xl font-bold shadow-lg shadow-indigo-100 border-none transition-all hover:scale-[1.02]"
-              )}
+              className={buttonVariants({ variant: "default", size: "lg" })}
             >
               Create Now
             </Link>
@@ -125,10 +119,7 @@ export default function EmployerTestList({ initialExams }: EmployerTestListProps
                 <div className="mt-auto">
                   <Link
                     href={`/employer/dashboard/${exam.id}/candidates`}
-                    className={cn(
-                      buttonVariants({ variant: "outline" }),
-                      "border-primary text-primary hover:bg-primary hover:text-white rounded-lg px-6 h-[40px] font-semibold transition-all"
-                    )}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     View Candidates
                   </Link>
@@ -143,21 +134,21 @@ export default function EmployerTestList({ initialExams }: EmployerTestListProps
         <div className="mt-12 flex justify-between items-center pt-6 text-sm text-[#64748B]">
           <div className="flex items-center gap-2">
             <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-md border border-slate-200"
+              variant="outline" 
+              size="icon-xs" 
+              className="border-slate-200"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             >
               <ChevronLeft size={16} />
             </Button>
-            <Button variant="ghost" className="h-8 w-8 rounded-md bg-slate-50 font-semibold text-[#1E293B]">
+            <Button variant="default" size="xs">
               {currentPage}
             </Button>
             <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-md border border-slate-200"
+              variant="outline" 
+              size="icon-xs" 
+              className="border-slate-200"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             >
