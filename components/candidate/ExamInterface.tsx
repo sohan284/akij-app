@@ -1,55 +1,51 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { Exam } from '@/lib/redux/slices/testSlice';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Navbar from '@/components/shared/Navbar';
-import { ChevronLeft, Undo2, Redo2, Bold, Italic, Underline, List, ChevronDown } from 'lucide-react';
+import { Undo2, Redo2, Bold, Italic, Underline, List, ChevronDown, ChevronLeft } from 'lucide-react';
 import { useExamTracking } from '@/hooks/useExamTracking';
 import { toast } from 'sonner';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/lib/redux/store';
 import Image from 'next/image';
 import successIcon from '@/app/assets/success.png';
 import timeupIcon from '@/app/assets/timeup.png';
 
-export default function ExamScreen() {
-  const user = useSelector((state: RootState) => state.auth.user);
+interface Question {
+  id: string;
+  title: string;
+  type: 'radio' | 'checkbox' | 'text';
+  options?: string[];
+  score: number;
+}
 
-  const { id } = useParams();
+interface Exam {
+  id: string;
+  title: string;
+  duration: number;
+  questions: Question[];
+}
+
+interface ExamInterfaceProps {
+  exam: Exam;
+  user: { email: string | null } | null;
+}
+
+export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
   const router = useRouter();
-
-  const [exam, setExam] = useState<Exam | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(exam.duration * 60);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isTimedOut, setIsTimedOut] = useState(false);
 
-  const { tabSwitches, fullscreenExits, enterFullscreen } = useExamTracking();
-
-  useEffect(() => {
-    const fetchExam = async () => {
-      try {
-        const response = await axios.get('/api/tests');
-        const foundExam = response.data.find((e: Exam) => e.id === id);
-        if (foundExam) {
-          setExam(foundExam);
-          setTimeLeft(foundExam.duration * 60);
-        }
-      } catch (error) {
-        console.error('Failed to fetch exam', error);
-      }
-    };
-    fetchExam();
-  }, [id]);
+  const { tabSwitches, fullscreenExits } = useExamTracking();
 
   useEffect(() => {
     if (tabSwitches > 0) {
@@ -69,7 +65,7 @@ export default function ExamScreen() {
 
   const submitToServer = useCallback(async () => {
     try {
-      await axios.post(`/api/tests/${id}/submit`, {
+      await axios.post(`/api/tests/${exam.id}/submit`, {
         candidateEmail: user?.email || 'candidate@akij.com',
         answers,
         tabSwitches,
@@ -78,7 +74,7 @@ export default function ExamScreen() {
     } catch (error) {
       console.error('Failed to submit exam', error);
     }
-  }, [id, answers, tabSwitches, fullscreenExits, user]);
+  }, [exam.id, answers, tabSwitches, fullscreenExits, user]);
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitted(true);
@@ -92,7 +88,7 @@ export default function ExamScreen() {
   }, [submitToServer]);
 
   useEffect(() => {
-    if (!exam || isSubmitted || isTimedOut) return;
+    if (isSubmitted || isTimedOut) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -106,16 +102,8 @@ export default function ExamScreen() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [exam, isSubmitted, isTimedOut, handleTimeout]);
+  }, [isSubmitted, isTimedOut, handleTimeout]);
 
-  if (!exam) return (
-    <div className="flex-1 flex flex-col">
-      <Navbar />
-      <div className="flex-1 flex items-center justify-center text-slate-500 text-[14px] md:text-[16px]">Loading assessment...</div>
-    </div>
-  );
-
-  // Test Completed page (manual submit)
   if (isSubmitted) {
     return (
       <div className="flex-1 flex flex-col">
@@ -150,7 +138,6 @@ export default function ExamScreen() {
     <div className="flex-1 flex flex-col">
       <Navbar />
 
-      {/* Header Bar */}
       <div className="container mx-auto pt-10 px-4">
         <div className="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm border border-slate-100">
           <div className="flex items-center gap-3">
@@ -222,7 +209,6 @@ export default function ExamScreen() {
             {currentQuestion.type === 'text' && (
               <div className="flex flex-col h-full min-h-[300px]">
                 <div className="border border-slate-100 rounded-xl overflow-hidden flex flex-col h-full bg-[#fcfdfe]">
-                  {/* Toolbar */}
                   <div className="flex items-center gap-1 p-2 border-b border-slate-100 bg-white">
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Undo2 size={16} /></Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500"><Redo2 size={16} /></Button>
@@ -275,7 +261,6 @@ export default function ExamScreen() {
         </Card>
       </main>
 
-      {/* Timeout Modal Overlay */}
       {isTimedOut && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-10 max-w-sm w-full mx-4 text-center">

@@ -18,6 +18,18 @@ export default function Navbar() {
   const pathname = usePathname();
   const isAuthPage = pathname?.includes('/login');
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      dispatch(logout());
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed', error);
+      // Fallback: clear client state anyway
+      dispatch(logout());
+    }
+  };
+
   return (
     <nav className="border-b backdrop-blur sticky top-0 z-50">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
@@ -68,7 +80,7 @@ export default function Navbar() {
                       {user?.role}
                     </span>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => dispatch(logout())} className="hover:bg-slate-100 rounded-full h-10 w-10">
+                  <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:bg-slate-100 rounded-full h-10 w-10">
                     <LogOut className="h-5 w-5 text-slate-600" />
                   </Button>
                 </div>
