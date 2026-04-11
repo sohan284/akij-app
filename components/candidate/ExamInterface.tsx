@@ -107,7 +107,6 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
   if (isSubmitted) {
     return (
       <div className="flex-1 flex flex-col">
-        <Navbar />
         <div className="flex-1 flex items-center justify-center p-6">
           <Card className="w-full max-w-[1200px] border border-slate-100 shadow-sm rounded-2xl px-8 py-10 text-center">
             <div className="flex justify-center mb-5">
@@ -137,7 +136,6 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
 
   return (
     <div className="flex-1 flex flex-col">
-      <Navbar />
 
       <div className="container mx-auto pt-10 px-4">
         <div className="bg-white rounded-xl p-3 flex items-center justify-between shadow-sm border border-slate-100">
