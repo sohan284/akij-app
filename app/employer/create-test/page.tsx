@@ -159,7 +159,7 @@ export default function CreateTestPage() {
   const router = useRouter();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       title: '',
       totalCandidates: 1,
@@ -404,7 +404,7 @@ export default function CreateTestPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('totalSlots', v)} defaultValue={watchAllFields.totalSlots}>
+                        <Select onValueChange={(v) => setValue('totalSlots', v as string)} defaultValue={watchAllFields.totalSlots}>
                           <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
                             <SelectValue placeholder="Select total slots" />
                           </SelectTrigger>
@@ -422,7 +422,7 @@ export default function CreateTestPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Question Set <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('questionSets', v)} defaultValue={watchAllFields.questionSets}>
+                        <Select onValueChange={(v) => setValue('questionSets', v as string)} defaultValue={watchAllFields.questionSets}>
                           <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
                             <SelectValue placeholder="Select total question set" />
                           </SelectTrigger>
@@ -436,7 +436,7 @@ export default function CreateTestPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('questionType', v)} defaultValue={watchAllFields.questionType}>
+                        <Select onValueChange={(v) => setValue('questionType', v as string)} defaultValue={watchAllFields.questionType}>
                           <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
                             <SelectValue placeholder="Select question type" />
                           </SelectTrigger>

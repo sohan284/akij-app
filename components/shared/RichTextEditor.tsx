@@ -26,9 +26,7 @@ interface RichTextEditorProps {
 export default function RichTextEditor({ content, onChange, placeholder, className }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        history: true,
-      }),
+      StarterKit,
       Placeholder.configure({
         placeholder: placeholder || 'Type here...',
       }),

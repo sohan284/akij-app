@@ -8,10 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ChevronLeft, Plus, Mail, User, Clock, CheckCircle2, AlertCircle, Search, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import axios from 'axios';
+import { Badge } from '@/components/ui/badge';
 
 export default function CandidatesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -51,8 +51,8 @@ export default function CandidatesPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const filteredCandidates = candidates.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredCandidates = candidates.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -76,11 +76,11 @@ export default function CandidatesPage({ params }: { params: Promise<{ id: strin
           </div>
 
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger render={
               <Button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-lg font-semibold shadow-md border-none">
                 <Plus className="mr-2 h-4 w-4" /> Add Candidate
               </Button>
-            </DialogTrigger>
+            } />
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Add New Candidate</DialogTitle>
@@ -91,19 +91,19 @@ export default function CandidatesPage({ params }: { params: Promise<{ id: strin
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input 
-                    id="name" 
-                    placeholder="John Doe" 
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
                     value={newCandidate.name}
                     onChange={(e) => setNewCandidate({ ...newCandidate, name: e.target.value })}
                   />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email Address</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="john@example.com" 
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john@example.com"
                     value={newCandidate.email}
                     onChange={(e) => setNewCandidate({ ...newCandidate, email: e.target.value })}
                   />
@@ -132,7 +132,7 @@ export default function CandidatesPage({ params }: { params: Promise<{ id: strin
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="border-none shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-[16px]">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -172,8 +172,8 @@ export default function CandidatesPage({ params }: { params: Promise<{ id: strin
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <CardTitle className="text-lg font-bold">Candidates List</CardTitle>
               <div className="relative w-full md:w-[320px]">
-                <Input 
-                  placeholder="Search by name or email" 
+                <Input
+                  placeholder="Search by name or email"
                   className="h-[40px] pl-10 rounded-lg border-slate-200 bg-slate-50/50 focus:bg-white transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

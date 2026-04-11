@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 export async function POST(
   request: Request,
@@ -25,7 +26,7 @@ export async function POST(
     }
 
     // Save results and update candidate status in a transaction
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.candidate.update({
         where: { id: candidate.id },
         data: {
