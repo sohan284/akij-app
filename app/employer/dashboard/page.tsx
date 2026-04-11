@@ -34,7 +34,6 @@ export default function EmployerDashboard() {
         setIsLoading(false);
       }
     };
-
     fetchTests();
   }, [dispatch]);
 

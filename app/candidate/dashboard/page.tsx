@@ -13,6 +13,8 @@ import { RootState } from '@/lib/redux/store';
 import { setExams } from '@/lib/redux/slices/testSlice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import Image from 'next/image';
+import noTestImg from '@/app/assets/noTest.png';
 import {
   Select,
   SelectContent,
@@ -40,7 +42,6 @@ export default function CandidateDashboard() {
         setIsLoading(false);
       }
     };
-
     fetchTests();
   }, [dispatch]);
 
@@ -74,15 +75,23 @@ export default function CandidateDashboard() {
             ))}
           </div>
         ) : filteredExams.length === 0 ? (
-          <Card className="text-center py-24 border-none shadow-sm bg-muted/5 flex-1 flex flex-col items-center justify-center">
-            <CardContent>
-              <Search className="mx-auto h-16 w-16 text-slate-200 mb-6" />
-              <h3 className="text-2xl font-bold text-slate-400">No assessments found.</h3>
-              <p className="max-w-md mx-auto mt-2 text-slate-400/80">
-                Try adjusting your search criteria or check back later.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="flex mt-8 bg-white h-[270px] flex-col items-center justify-center py-20 animate-in fade-in rounded-lg transition-all duration-500">
+            <div className="relative w-full max-w-[400px] mb-8">
+              <Image
+                src={noTestImg}
+                alt="No Tests"
+                className="w-40 h-32 mx-auto object-contain"
+              />
+            </div>
+            <h3 className="text-[22px] font-bold text-[#1E293B] mb-3">
+              {searchQuery ? 'No Results Found' : 'No assessments yet?'}
+            </h3>
+            <p className="text-[#64748B] text-center max-w-[480px] leading-relaxed">
+              {searchQuery
+                ? `We couldn't find any assessments matching "${searchQuery}". Please try a different search term.`
+                : 'Your assigned assessments will appear here. Please check back later or contact your employer.'}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
             {filteredExams.map((exam) => (
@@ -108,17 +117,19 @@ export default function CandidateDashboard() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="p-0 mt-auto">
+
+                <div>
                   <Link
                     href={`/candidate/exam/${exam.id}`}
                     className={cn(
                       buttonVariants({ variant: "outline" }),
-                      "h-11 px-10 text-[15px] font-bold border-indigo-100 text-[#6366f1] hover:bg-indigo-50 hover:text-[#6366f1] hover:border-indigo-200 rounded-xl transition-all"
+                      "h-11 px-10 text-[15px] font-bold text-[#6366f1] hover:bg-indigo-50 hover:text-[#6366f1] hover:border-indigo-200 rounded-xl transition-all"
                     )}
                   >
                     Start
                   </Link>
-                </CardFooter>
+                </div>
+
               </Card>
             ))}
           </div>

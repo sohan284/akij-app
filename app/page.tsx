@@ -34,43 +34,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <section className="py-20 px-4">
-          <div className="container mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  title: "Multi-Step Tests",
-                  description: "Create complex exams with multiple question sets and types.",
-                  icon: <LayoutDashboard className="h-10 w-10 text-primary" />,
-                },
-                {
-                  title: "Real-time Tracking",
-                  description: "Monitor candidate behavior, including tab switches and exit fullscreen.",
-                  icon: <Clock className="h-10 w-10 text-primary" />,
-                },
-                {
-                  title: "Automated Grading",
-                  description: "Instant results for objective questions with detailed reports.",
-                  icon: <Briefcase className="h-10 w-10 text-primary" />,
-                },
-                {
-                  title: "Candidate Management",
-                  description: "Easily manage thousands of candidates and track their progress.",
-                  icon: <Users className="h-10 w-10 text-primary" />,
-                },
-              ].map((feature, i) => (
-                <Card key={i} className="border-none bg-card/50 backdrop-blur hover:bg-card transition-colors shadow-xs hover:shadow-md">
-                  <CardHeader>
-                    <div className="mb-4">{feature.icon}</div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                    <CardDescription>{feature.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
       </main>
     </>
   );
