@@ -91,10 +91,10 @@ export default function EmployerTestList({ initialExams }: EmployerTestListProps
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {currentExams.map((exam) => (
-            <Card key={exam.id} className="bg-white rounded-[16px] p-6 hover:shadow-md transition-shadow">
-              <div className="flex flex-col h-full gap-6">
+            <Card key={exam.id} className="bg-white rounded-[20px] p-6 hover:shadow-md transition-shadow border border-slate-100 flex flex-col h-[200px]">
+              <div className="flex flex-col h-full gap-5">
                 <CardTitle className="text-xl font-bold text-[#1E293B] line-clamp-2 min-h-[56px] leading-[1.4]">
                   {exam.title}
                 </CardTitle>

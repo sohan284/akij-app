@@ -199,7 +199,7 @@ export default function ExamInterface({ exam, user }: ExamInterfaceProps) {
                         className="h-5 w-5 rounded-md border-2 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <Label htmlFor={`q-${currentQuestion.id}-opt-${i}`} className="flex-1 cursor-pointer text-[14px] md:text-[16px] font-medium text-slate-700">
-                        {opt}
+                        <div dangerouslySetInnerHTML={{ __html: opt }} />
                       </Label>
                     </div>
                   );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/shared/Navbar';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,35 +31,35 @@ import RichTextEditor from '@/components/shared/RichTextEditor';
 // --- Schemas ---
 
 const optionSchema = z.object({
-  text: z.string().min(1, 'Option text is required'),
+  text: z.string().optional().or(z.literal('')),
   isCorrect: z.boolean().default(false),
 });
 
 const questionSchema = z.object({
   title: z.string().min(1, 'Question title is required'),
   type: z.enum(['radio', 'checkbox', 'text']),
-  score: z.coerce.number().min(1).default(1),
-  options: z.array(optionSchema).optional(),
-}).refine((data) => {
-  if (data.type !== 'text') {
-    return (data.options?.length ?? 0) >= 2;
-  }
-  return true;
-}, {
-  message: "At least 2 options are required for MCQ/Checkbox questions",
-  path: ["options"],
+  score: z.coerce.number().min(0).default(1),
+  options: z.array(optionSchema).optional().default([]),
 });
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  totalCandidates: z.coerce.number().min(1),
-  totalSlots: z.string().min(1, 'Total slots is required'),
-  questionSets: z.string().min(1, 'Question sets is required'),
-  questionType: z.string().min(1, 'Question type is required'),
+  totalCandidates: z.coerce.number().min(1, 'At least 1 candidate is required'),
+  totalSlots: z.string().optional().default(''),
+  questionSets: z.string().optional().default(''),
+  questionType: z.string().optional().default(''),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  duration: z.coerce.number().min(1),
-  questions: z.array(questionSchema).min(0),
+  duration: z.coerce.number().min(1, 'Duration is required'),
+  questions: z.array(questionSchema).optional().default([]),
+}).refine(data => {
+  if (data.startTime && data.endTime) {
+    return new Date(data.endTime) > new Date(data.startTime);
+  }
+  return true;
+}, {
+  message: "End time must be after start time",
+  path: ["endTime"]
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -158,6 +159,7 @@ export default function CreateTestPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [modalErrors, setModalErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<FormValues>({
@@ -197,6 +199,10 @@ export default function CreateTestPage() {
   });
 
   const onSubmit = async (data: FormValues) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const toastId = toast.loading('Updating online test...');
+
     try {
       const formattedData = {
         ...data,
@@ -207,9 +213,14 @@ export default function CreateTestPage() {
         }))
       };
       await axios.post('/api/tests', formattedData);
+      toast.success('Test updated successfully!', { id: toastId });
       router.push('/employer/dashboard');
-    } catch (error) {
-      console.error('Failed to create test', error);
+    } catch (error: any) {
+      console.error('Failed to update test', error);
+      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+      toast.error(`Failed to update test: ${errorMessage}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -233,17 +244,6 @@ export default function CreateTestPage() {
     const errors: string[] = [];
     if (!stripHtml(currentModalQuestion.title).trim()) {
       errors.push("Question title is required.");
-    }
-
-    if (currentModalQuestion.type !== 'text') {
-      const validOptions = currentModalQuestion.options.filter((o: any) => stripHtml(o.text).trim().length > 0);
-      if (validOptions.length < 2) {
-        errors.push("At least 2 options must have text for MCQ/Checkbox.");
-      }
-      const hasCorrect = currentModalQuestion.options.some((o: any) => o.isCorrect);
-      if (!hasCorrect) {
-        errors.push("Please select at least one correct answer.");
-      }
     }
 
     if (errors.length > 0) {
@@ -498,6 +498,7 @@ export default function CreateTestPage() {
                       variant="default"
                       size="xl"
                       className="flex-1"
+                      disabled={isSubmitting}
                       onClick={async () => {
                         const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
                         if (isValid) {
@@ -563,6 +564,7 @@ export default function CreateTestPage() {
                       variant="default"
                       size="xl"
                       className="flex-1"
+                      disabled={isSubmitting}
                       onClick={(e) => {
                         e.preventDefault();
                         form.handleSubmit(onSubmit, (err) => {
@@ -570,7 +572,7 @@ export default function CreateTestPage() {
                         })();
                       }}
                     >
-                      Save & Continue
+                      {isSubmitting ? 'Updating...' : 'Save & Continue'}
                     </Button>
                   </div>
                 </div>
@@ -631,20 +633,23 @@ export default function CreateTestPage() {
               </div>
             </DialogHeader>
 
-            <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
+            <div className="p-6 pb-0">
               {modalErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2 text-red-600 font-bold text-sm">
-                    <AlertCircle size={16} />
-                    <span>Please fix the following to save:</span>
+                <div className="flex flex-col gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 font-bold mb-1">
+                    <AlertCircle size={18} />
+                    <span>Requirement Missing</span>
                   </div>
-                  <ul className="list-disc pl-8 text-sm text-red-500 font-medium">
+                  <ul className="list-disc list-inside pl-1 space-y-1">
                     {modalErrors.map((err, i) => (
                       <li key={i}>{err}</li>
                     ))}
                   </ul>
                 </div>
               )}
+            </div>
+
+            <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
 
               <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary transition-all">
                 <RichTextEditor

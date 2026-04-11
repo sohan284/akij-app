@@ -1,36 +1,36 @@
 import { z } from 'zod';
 
 export const optionSchema = z.object({
-  text: z.string().min(1, 'Option text is required'),
+  text: z.string().optional().or(z.literal('')),
   isCorrect: z.boolean().default(false),
 });
 
 export const questionSchema = z.object({
   title: z.string().min(1, 'Question title is required'),
   type: z.enum(['radio', 'checkbox', 'text']),
-  score: z.coerce.number().min(1).default(1),
-  options: z.array(optionSchema).optional(),
+  score: z.coerce.number().min(0).default(1),
+  options: z.array(z.string()).optional().default([]),
   correctAnswer: z.union([z.string(), z.array(z.string())]).optional(),
-}).refine((data) => {
-  if (data.type !== 'text') {
-    return (data.options?.length ?? 0) >= 2;
-  }
-  return true;
-}, {
-  message: "At least 2 options are required for MCQ/Checkbox questions",
-  path: ["options"],
 });
 
 export const examSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  totalCandidates: z.coerce.number().min(1),
-  totalSlots: z.coerce.number().min(1),
-  questionSets: z.coerce.number().min(1),
+  totalCandidates: z.coerce.number().min(1, 'At least 1 candidate is required'),
+  totalSlots: z.coerce.number().min(1, 'Total slots is required'),
+  questionSets: z.coerce.number().min(1, 'Question sets is required'),
   questionType: z.string().min(1, 'Question type is required'),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  duration: z.coerce.number().min(1),
-  questions: z.array(questionSchema).min(1, 'At least one question is required'),
+  duration: z.coerce.number().min(1, 'Duration is required'),
+  questions: z.array(questionSchema).optional().default([]),
+}).refine(data => {
+  if (data.startTime && data.endTime) {
+    return new Date(data.endTime) > new Date(data.startTime);
+  }
+  return true;
+}, {
+  message: "End time must be after start time",
+  path: ["endTime"]
 });
 
 export const candidateSchema = z.object({

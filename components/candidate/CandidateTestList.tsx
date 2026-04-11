@@ -84,13 +84,12 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
           {currentExams.map((exam) => (
-            <Card key={exam.id} className="overflow-hidden border border-slate-100 bg-white hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300 rounded-2xl flex flex-col p-6">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-[1.35rem] font-bold text-slate-800 leading-tight">
+            <Card key={exam.id} className="bg-white rounded-[20px] p-6 hover:shadow-md transition-shadow border border-slate-100 flex flex-col h-[200px]">
+              <div className="flex flex-col h-full gap-5">
+                <CardTitle className="text-xl font-bold text-[#1E293B] line-clamp-2 min-h-[56px] leading-[1.4]">
                   {exam.title}
                 </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 mb-6">
+
                 <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-[14px]">
                   <div className="flex items-center gap-2 text-slate-500 font-medium">
                     <Clock className="w-4 h-4 text-slate-400" />
@@ -105,15 +104,15 @@ export default function CandidateTestList({ initialExams }: CandidateTestListPro
                     <span>Negative Marking: <span className="text-slate-800">{exam.negativeMarking ? "-0.25/wrong" : "No"}</span></span>
                   </div>
                 </div>
-              </CardContent>
 
-              <div className="mt-auto">
-                <Link
-                  href={`/candidate/exam/${exam.id}`}
-                  className={buttonVariants({ variant: "outline", size: "default" })}
-                >
-                  Start
-                </Link>
+                <div className="mt-auto">
+                  <Link
+                    href={`/candidate/exam/${exam.id}`}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
+                  >
+                    Start Exam
+                  </Link>
+                </div>
               </div>
             </Card>
           ))}

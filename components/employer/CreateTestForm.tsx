@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
@@ -26,35 +27,35 @@ import RichTextEditor from '@/components/shared/RichTextEditor';
 // --- Schemas ---
 
 const optionSchema = z.object({
-  text: z.string().min(1, 'Option text is required'),
+  text: z.string().optional().or(z.literal('')),
   isCorrect: z.boolean().default(false),
 });
 
 const questionSchema = z.object({
   title: z.string().min(1, 'Question title is required'),
   type: z.enum(['radio', 'checkbox', 'text']),
-  score: z.coerce.number().min(1).default(1),
-  options: z.array(optionSchema).optional(),
-}).refine((data) => {
-  if (data.type !== 'text') {
-    return (data.options?.length ?? 0) >= 2;
-  }
-  return true;
-}, {
-  message: "At least 2 options are required for MCQ/Checkbox questions",
-  path: ["options"],
+  score: z.coerce.number().min(0).default(1),
+  options: z.array(optionSchema).optional().default([]),
 });
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  totalCandidates: z.coerce.number().min(1),
+  totalCandidates: z.coerce.number().min(1, 'At least 1 candidate is required'),
   totalSlots: z.string().min(1, 'Total slots is required'),
   questionSets: z.string().min(1, 'Question sets is required'),
   questionType: z.string().min(1, 'Question type is required'),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  duration: z.coerce.number().min(1),
-  questions: z.array(questionSchema).min(0),
+  duration: z.coerce.number().min(1, 'Duration is required'),
+  questions: z.array(questionSchema).optional().default([]),
+}).refine(data => {
+  if (data.startTime && data.endTime) {
+    return new Date(data.endTime) > new Date(data.startTime);
+  }
+  return true;
+}, {
+  message: "End time must be after start time",
+  path: ["endTime"]
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -156,6 +157,7 @@ export default function CreateTestForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [modalErrors, setModalErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<FormValues>({
@@ -195,6 +197,10 @@ export default function CreateTestForm() {
   });
 
   const onSubmit = async (data: FormValues) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const toastId = toast.loading('Creating online test...');
+
     try {
       const formattedData = {
         ...data,
@@ -205,9 +211,14 @@ export default function CreateTestForm() {
         }))
       };
       await axios.post('/api/tests', formattedData);
+      toast.success('Test created successfully!', { id: toastId });
       router.push('/employer/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create test', error);
+      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+      toast.error(`Failed to create test: ${errorMessage}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -231,17 +242,6 @@ export default function CreateTestForm() {
     const errors: string[] = [];
     if (!stripHtml(currentModalQuestion.title).trim()) {
       errors.push("Question title is required.");
-    }
-
-    if (currentModalQuestion.type !== 'text') {
-      const validOptions = currentModalQuestion.options.filter((o: any) => stripHtml(o.text).trim().length > 0);
-      if (validOptions.length < 2) {
-        errors.push("At least 2 options must have text for MCQ/Checkbox.");
-      }
-      const hasCorrect = currentModalQuestion.options.some((o: any) => o.isCorrect);
-      if (!hasCorrect) {
-        errors.push("Please select at least one correct answer.");
-      }
     }
 
     if (errors.length > 0) {
@@ -274,7 +274,7 @@ export default function CreateTestForm() {
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto">
+    <div className="">
       {/* Header Info (Optional display based on step) */}
       <Card className="mb-8 border-none shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-[16px] overflow-hidden">
         <div className="p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -311,333 +311,353 @@ export default function CreateTestForm() {
           </Button>
         </div>
       </Card>
+      <div className='max-w-[1000px] mx-auto'>
 
-      {/* Step 1 Summary View - Visible when on Step 2 */}
-      {step === 2 && (
-        <Card className="mb-8 border-none shadow-[0_8px_30px_rgba(0,0,0,0.02)] rounded-[20px] bg-white overflow-hidden">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-lg font-bold text-[#1E293B]">Basic Information</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep(1)}
-                className="text-primary hover:bg-primary/5 gap-2"
-              >
-                <PencilLine size={16} /> Edit
-              </Button>
-            </div>
-            <div className="space-y-8">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Online Test Title</span>
-                <p className="text-md font-bold text-slate-700">{watchAllFields.title || 'Untitled Test'}</p>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Candidates</span>
-                  <p className="text-md font-bold text-slate-700">{watchAllFields.totalCandidates?.toLocaleString() || '1'}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Slots</span>
-                  <p className="text-md font-bold text-slate-700">{watchAllFields.totalSlots || '1'}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Question Sets</span>
-                  <p className="text-md font-bold text-slate-700">{watchAllFields.questionSets || '1'}</p>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Duration (Min)</span>
-                  <p className="text-md font-bold text-slate-700">{watchAllFields.duration || '60'}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {step === 1 ? (
-        <div className="space-y-6">
-          <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[20px] overflow-hidden bg-white">
+        {/* Step 1 Summary View - Visible when on Step 2 */}
+        {step === 2 && (
+          <Card className="mb-8 border-none shadow-[0_8px_30px_rgba(0,0,0,0.02)] rounded-[20px] bg-white overflow-hidden">
             <div className="p-8">
-              <h2 className="text-lg font-bold text-[#1E293B] mb-8">Basic Information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-2 col-span-2">
-                  <Label className="text-sm font-bold text-slate-700">Online Test Title <span className="text-red-500">*</span></Label>
-                  <Input
-                    {...register('title')}
-                    placeholder="Enter online test title"
-                    className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
-                  />
-                  {errors.title && <p className="text-xs text-red-500 font-medium">{errors.title.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Total Candidates <span className="text-red-500">*</span></Label>
-                  <Input
-                    type="number"
-                    {...register('totalCandidates')}
-                    className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
-                  />
-                  {errors.totalCandidates && <p className="text-xs text-red-500 font-medium">{errors.totalCandidates.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
-                  <Select onValueChange={(v) => setValue('totalSlots', v ?? '')} defaultValue={watch('totalSlots') as string}>
-                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
-                      <SelectValue placeholder="Select slots" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Slots</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.totalSlots && <p className="text-xs text-red-500 font-medium">{errors.totalSlots.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Question Sets <span className="text-red-500">*</span></Label>
-                  <Select onValueChange={(v) => setValue('questionSets', v ?? '')} defaultValue={watch('questionSets') as string}>
-                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
-                      <SelectValue placeholder="Select sets" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.questionSets && <p className="text-xs text-red-500 font-medium">{errors.questionSets.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
-                  <Select onValueChange={(v) => setValue('questionType', v ?? '')} defaultValue={watch('questionType') as string}>
-                    <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MCQ">MCQ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.questionType && <p className="text-xs text-red-500 font-medium">{errors.questionType.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Start Time <span className="text-red-500">*</span></Label>
-                  <Input
-                    type="datetime-local"
-                    {...register('startTime')}
-                    className="h-14 rounded-xl border-slate-200"
-                  />
-                  {errors.startTime && <p className="text-xs text-red-500 font-medium">{errors.startTime.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">End Time <span className="text-red-500">*</span></Label>
-                  <Input
-                    type="datetime-local"
-                    {...register('endTime')}
-                    className="h-14 rounded-xl border-slate-200"
-                  />
-                  {errors.endTime && <p className="text-xs text-red-500 font-medium">{errors.endTime.message as string}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-bold text-slate-700">Duration (Min)</Label>
-                  <Input
-                    type="number"
-                    {...register('duration')}
-                    className="h-14 rounded-xl border-slate-200 bg-slate-50"
-                  />
-                  {errors.duration && <p className="text-xs text-red-500 font-medium">{errors.duration.message as string}</p>}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[20px] bg-white">
-            <div className="p-6 md:p-8 flex justify-between gap-4">
-              <Button
-                variant="outline"
-                size="xl"
-                className="flex-1"
-                onClick={() => router.push('/employer/dashboard')}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                size="xl"
-                className="flex-1"
-                onClick={async () => {
-                  const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
-                  if (isValid) setStep(2);
-                }}
-              >
-                Save & Continue
-              </Button>
-            </div>
-          </Card>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {fields.map((field, index) => (
-            <QuestionCard
-              key={field.id}
-              index={index}
-              question={field}
-              onEdit={() => {
-                setEditingQuestionIndex(index);
-                setModalErrors([]);
-                setCurrentModalQuestion(field);
-                setIsModalOpen(true);
-              }}
-              onRemove={() => remove(index)}
-            />
-          ))}
-
-          <Button
-            variant="default"
-            size="xl"
-            className="w-full"
-            onClick={openAddModal}
-          >
-            <Plus className="mr-2" /> Add Question
-          </Button>
-
-          <div className="flex flex-col gap-4 pt-4">
-            {Object.keys(errors).length > 0 && (
-              <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
-                <AlertCircle size={18} className="shrink-0" />
-                <p>Please complete all Basic Information fields before saving.</p>
-              </div>
-            )}
-            <div className="flex justify-between gap-4">
-              <Button
-                variant="outline"
-                size="xl"
-                className="flex-1"
-                onClick={() => setStep(1)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                size="xl"
-                className="flex-1"
-                onClick={handleSubmit(onSubmit)}
-              >
-                Create Test
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- Add Question Modal --- */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent style={{ maxWidth: '950px' }} className="p-0 rounded-[24px] overflow-hidden gap-0">
-          <DialogHeader className="p-6 border-b flex flex-row items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center h-8 w-8 rounded-full border-2 border-slate-200 text-slate-400 text-xs font-bold">
-                {editingQuestionIndex !== null ? editingQuestionIndex + 1 : fields.length + 1}
-              </div>
-              <DialogTitle className="text-xl font-bold text-slate-700">Question {editingQuestionIndex !== null ? editingQuestionIndex + 1 : fields.length + 1}</DialogTitle>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 mr-4">
-                <span className="text-sm font-bold text-slate-500">Score:</span>
-                <Input
-                  type="number"
-                  value={currentModalQuestion.score}
-                  onChange={(e) => setCurrentModalQuestion({ ...currentModalQuestion, score: e.target.value })}
-                  className="w-16 h-8 text-center bg-slate-50/50 rounded-md border-slate-200 font-bold"
-                />
-              </div>
-              <Select
-                value={currentModalQuestion.type}
-                onValueChange={(v) => setCurrentModalQuestion({ ...currentModalQuestion, type: v })}
-              >
-                <SelectTrigger className="h-9 w-[130px] rounded-lg border-slate-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="checkbox">Checkbox</SelectItem>
-                  <SelectItem value="radio">Radio</SelectItem>
-                  <SelectItem value="text">Subjective</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </DialogHeader>
-
-          <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
-            <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary transition-all">
-              <RichTextEditor
-                content={currentModalQuestion.title}
-                onChange={(content) => setCurrentModalQuestion({ ...currentModalQuestion, title: content })}
-                placeholder="Type your question here..."
-              />
-            </div>
-
-            {currentModalQuestion.type !== 'text' && (
-              <div className="space-y-6">
-                {currentModalQuestion.options.map((opt: any, idx: number) => (
-                  <div key={idx} className="space-y-3 pl-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400">
-                          {String.fromCharCode(65 + idx)}
-                        </div>
-                        <Checkbox
-                          id={`opt-${idx}`}
-                          checked={opt.isCorrect}
-                          onCheckedChange={(checked) => {
-                            const newOpts = currentModalQuestion.options.map((o: any, i: number) => ({
-                              ...o,
-                              isCorrect: currentModalQuestion.type === 'radio' ? i === idx && !!checked : (i === idx ? !!checked : o.isCorrect)
-                            }));
-                            setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
-                          }}
-                        />
-                        <Label htmlFor={`opt-${idx}`} className="text-xs font-bold text-slate-500">Correct Answer</Label>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => {
-                        const newOpts = currentModalQuestion.options.filter((_: any, i: number) => i !== idx);
-                        setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
-                      }}>
-                        <Trash2 size={16} className="text-slate-300" />
-                      </Button>
-                    </div>
-                    <div className="border border-slate-200 rounded-lg overflow-hidden ml-10">
-                      <RichTextEditor
-                        content={opt.text}
-                        onChange={(content) => {
-                          const newOpts = [...currentModalQuestion.options];
-                          newOpts[idx].text = content;
-                          setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
-                        }}
-                        placeholder={`Option ${String.fromCharCode(65 + idx)}`}
-                      />
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-lg font-bold text-[#1E293B]">Basic Information</h2>
                 <Button
-                  type="button"
                   variant="ghost"
                   size="sm"
-                  className="ml-10 text-primary hover:bg-primary/5"
-                  onClick={() => setCurrentModalQuestion({ ...currentModalQuestion, options: [...currentModalQuestion.options, { text: '', isCorrect: false }] })}
+                  onClick={() => setStep(1)}
+                  className="text-primary hover:bg-primary/5 gap-2"
                 >
-                  <Plus size={16} className="mr-2" /> Add Option
+                  <PencilLine size={16} /> Edit
                 </Button>
               </div>
-            )}
-          </div>
+              <div className="space-y-8">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Online Test Title</span>
+                  <p className="text-md font-bold text-slate-700">{watchAllFields.title || 'Untitled Test'}</p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Candidates</span>
+                    <p className="text-md font-bold text-slate-700">{watchAllFields.totalCandidates?.toLocaleString() || '1'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Slots</span>
+                    <p className="text-md font-bold text-slate-700">{watchAllFields.totalSlots || '1'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Question Sets</span>
+                    <p className="text-md font-bold text-slate-700">{watchAllFields.questionSets || '1'}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Duration (Min)</span>
+                    <p className="text-md font-bold text-slate-700">{watchAllFields.duration || '60'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
 
-          <div className="p-6 border-t flex justify-end gap-3 bg-slate-50/30">
-            <Button variant="outline" size="sm" onClick={() => handleSaveQuestion(false)}>Save</Button>
-            <Button variant="default" size="sm" onClick={() => handleSaveQuestion(true)}>Save & Add More</Button>
+        {step === 1 ? (
+          <div className="space-y-6">
+            <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[20px] overflow-hidden bg-white">
+              <div className="p-8">
+                <h2 className="text-lg font-bold text-[#1E293B] mb-8">Basic Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="space-y-2 col-span-2">
+                    <Label className="text-sm font-bold text-slate-700">Online Test Title <span className="text-red-500">*</span></Label>
+                    <Input
+                      {...register('title')}
+                      placeholder="Enter online test title"
+                      className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
+                    />
+                    {errors.title && <p className="text-xs text-red-500 font-medium">{errors.title.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Total Candidates <span className="text-red-500">*</span></Label>
+                    <Input
+                      type="number"
+                      {...register('totalCandidates')}
+                      className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
+                    />
+                    {errors.totalCandidates && <p className="text-xs text-red-500 font-medium">{errors.totalCandidates.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
+                    <Select onValueChange={(v) => setValue('totalSlots', v ?? '')} defaultValue={watch('totalSlots') as string}>
+                      <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
+                        <SelectValue placeholder="Select slots" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 Slots</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.totalSlots && <p className="text-xs text-red-500 font-medium">{errors.totalSlots.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Question Sets <span className="text-red-500">*</span></Label>
+                    <Select onValueChange={(v) => setValue('questionSets', v ?? '')} defaultValue={watch('questionSets') as string}>
+                      <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
+                        <SelectValue placeholder="Select sets" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.questionSets && <p className="text-xs text-red-500 font-medium">{errors.questionSets.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
+                    <Select onValueChange={(v) => setValue('questionType', v ?? '')} defaultValue={watch('questionType') as string}>
+                      <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MCQ">MCQ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.questionType && <p className="text-xs text-red-500 font-medium">{errors.questionType.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Start Time <span className="text-red-500">*</span></Label>
+                    <Input
+                      type="datetime-local"
+                      {...register('startTime')}
+                      className="h-14 rounded-xl border-slate-200"
+                    />
+                    {errors.startTime && <p className="text-xs text-red-500 font-medium">{errors.startTime.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">End Time <span className="text-red-500">*</span></Label>
+                    <Input
+                      type="datetime-local"
+                      {...register('endTime')}
+                      className="h-14 rounded-xl border-slate-200"
+                    />
+                    {errors.endTime && <p className="text-xs text-red-500 font-medium">{errors.endTime.message as string}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-bold text-slate-700">Duration (Min)</Label>
+                    <Input
+                      type="number"
+                      {...register('duration')}
+                      className="h-14 rounded-xl border-slate-200 bg-slate-50"
+                    />
+                    {errors.duration && <p className="text-xs text-red-500 font-medium">{errors.duration.message as string}</p>}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[20px] bg-white">
+              <div className="p-6 md:p-8 flex justify-between gap-4">
+                <Button
+                  variant="outline"
+                  size="xl"
+                  className="flex-1"
+                  onClick={() => router.push('/employer/dashboard')}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  size="xl"
+                  className="flex-1"
+                  disabled={isSubmitting}
+                  onClick={async () => {
+                    const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
+                    if (isValid) setStep(2);
+                  }}
+                >
+                  Save & Continue
+                </Button>
+              </div>
+            </Card>
           </div>
-        </DialogContent>
-      </Dialog>
+        ) : (
+          <div className="space-y-8">
+            {fields.map((field, index) => (
+              <QuestionCard
+                key={field.id}
+                index={index}
+                question={field}
+                onEdit={() => {
+                  setEditingQuestionIndex(index);
+                  setModalErrors([]);
+                  setCurrentModalQuestion(field);
+                  setIsModalOpen(true);
+                }}
+                onRemove={() => remove(index)}
+              />
+            ))}
+
+            <Button
+              variant="default"
+              size="xl"
+              className="w-full"
+              onClick={openAddModal}
+            >
+              <Plus className="mr-2" /> Add Question
+            </Button>
+
+            <div className="flex flex-col gap-4 pt-4">
+              {Object.keys(errors).length > 0 && (
+                <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm">
+                  <AlertCircle size={18} className="shrink-0" />
+                  <p>Please complete all Basic Information fields before saving.</p>
+                </div>
+              )}
+              <div className="flex justify-between gap-4">
+                <Button
+                  variant="outline"
+                  size="xl"
+                  className="flex-1"
+                  onClick={() => setStep(1)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  size="xl"
+                  className="flex-1"
+                  disabled={isSubmitting}
+                  onClick={handleSubmit(onSubmit)}
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Test'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- Add Question Modal --- */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent style={{ maxWidth: '950px' }} className="p-0 rounded-[24px] overflow-hidden gap-0">
+            <DialogHeader className="p-6 border-b flex flex-row items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full border-2 border-slate-200 text-slate-400 text-xs font-bold">
+                  {editingQuestionIndex !== null ? editingQuestionIndex + 1 : fields.length + 1}
+                </div>
+                <DialogTitle className="text-xl font-bold text-slate-700">Question {editingQuestionIndex !== null ? editingQuestionIndex + 1 : fields.length + 1}</DialogTitle>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 mr-4">
+                  <span className="text-sm font-bold text-slate-500">Score:</span>
+                  <Input
+                    type="number"
+                    value={currentModalQuestion.score}
+                    onChange={(e) => setCurrentModalQuestion({ ...currentModalQuestion, score: e.target.value })}
+                    className="w-16 h-8 text-center bg-slate-50/50 rounded-md border-slate-200 font-bold"
+                  />
+                </div>
+                <Select
+                  value={currentModalQuestion.type}
+                  onValueChange={(v) => setCurrentModalQuestion({ ...currentModalQuestion, type: v })}
+                >
+                  <SelectTrigger className="h-9 w-[130px] rounded-lg border-slate-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="checkbox">Checkbox</SelectItem>
+                    <SelectItem value="radio">Radio</SelectItem>
+                    <SelectItem value="text">Subjective</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </DialogHeader>
+
+            <div className="p-6 pb-0">
+              {modalErrors.length > 0 && (
+                <div className="flex flex-col gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 font-bold mb-1">
+                    <AlertCircle size={18} />
+                    <span>Requirement Missing</span>
+                  </div>
+                  <ul className="list-disc list-inside pl-1 space-y-1">
+                    {modalErrors.map((err, i) => (
+                      <li key={i}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
+              <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary transition-all">
+                <RichTextEditor
+                  content={currentModalQuestion.title}
+                  onChange={(content) => setCurrentModalQuestion({ ...currentModalQuestion, title: content })}
+                  placeholder="Type your question here..."
+                />
+              </div>
+
+              {currentModalQuestion.type !== 'text' && (
+                <div className="space-y-6">
+                  {currentModalQuestion.options.map((opt: any, idx: number) => (
+                    <div key={idx} className="space-y-3 pl-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-7 w-7 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-400">
+                            {String.fromCharCode(65 + idx)}
+                          </div>
+                          <Checkbox
+                            id={`opt-${idx}`}
+                            checked={opt.isCorrect}
+                            onCheckedChange={(checked) => {
+                              const newOpts = currentModalQuestion.options.map((o: any, i: number) => ({
+                                ...o,
+                                isCorrect: currentModalQuestion.type === 'radio' ? i === idx && !!checked : (i === idx ? !!checked : o.isCorrect)
+                              }));
+                              setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
+                            }}
+                          />
+                          <Label htmlFor={`opt-${idx}`} className="text-xs font-bold text-slate-500">Correct Answer</Label>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => {
+                          const newOpts = currentModalQuestion.options.filter((_: any, i: number) => i !== idx);
+                          setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
+                        }}>
+                          <Trash2 size={16} className="text-slate-300" />
+                        </Button>
+                      </div>
+                      <div className="border border-slate-200 rounded-lg overflow-hidden ml-10">
+                        <RichTextEditor
+                          content={opt.text}
+                          onChange={(content) => {
+                            const newOpts = [...currentModalQuestion.options];
+                            newOpts[idx].text = content;
+                            setCurrentModalQuestion({ ...currentModalQuestion, options: newOpts });
+                          }}
+                          placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="ml-10 text-primary hover:bg-primary/5"
+                    onClick={() => setCurrentModalQuestion({ ...currentModalQuestion, options: [...currentModalQuestion.options, { text: '', isCorrect: false }] })}
+                  >
+                    <Plus size={16} className="mr-2" /> Add Option
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t flex justify-end gap-3 bg-slate-50/30">
+              <Button variant="outline" size="sm" onClick={() => handleSaveQuestion(false)}>Save</Button>
+              <Button variant="default" size="sm" onClick={() => handleSaveQuestion(true)}>Save & Add More</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
