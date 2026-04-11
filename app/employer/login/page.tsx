@@ -118,10 +118,10 @@ export default function EmployerLoginPage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="p-0 mt-auto">
+            <div className="p-0 mt-auto">
               <Button
                 type="submit"
-                className="w-full h-[48px] mb-6 text-[18px] font-bold bg-primary hover:opacity-90 text-white rounded-lg transition-all"
+                className="w-full h-[48px] mb-4 md:my-10 text-[18px] font-bold bg-primary hover:opacity-90 text-white rounded-lg transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -133,7 +133,7 @@ export default function EmployerLoginPage() {
                   'Submit'
                 )}
               </Button>
-            </CardFooter>
+            </div>
           </form>
         </Card>
       </main>

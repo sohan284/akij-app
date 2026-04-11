@@ -118,10 +118,10 @@ export default function CandidateLoginPage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="p-0 mt-auto">
+            <div className="p-0 mt-auto">
               <Button
                 type="submit"
-                className="w-full mb-4 md:mb-6 h-[60px] text-[18px] font-bold bg-[#6366f1] hover:bg-[#5a5cd8] text-white rounded-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[0.99]"
+                className="w-full mb-4 md:my-10 h-[48px] text-[18px] font-bold bg-[#6366f1] hover:bg-[#5a5cd8] text-white rounded-lg shadow-lg shadow-indigo-100 transition-all hover:scale-[0.99]"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -133,7 +133,7 @@ export default function CandidateLoginPage() {
                   'Submit'
                 )}
               </Button>
-            </CardFooter>
+            </div>
           </form>
         </Card>
       </main>
