@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { createSession } from '@/lib/session';
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -11,6 +12,9 @@ export async function POST(request: Request) {
     });
 
     if (user && user.password === password) {
+      // Create session cookie
+      await createSession(user.id, user.role);
+
       // In a real app, use hashing (bcrypt) and JWT signatures.
       const { password: _password, ...userWithoutPassword } = user;
       void _password;

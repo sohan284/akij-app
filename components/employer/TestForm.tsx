@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/shared/Navbar';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,35 +31,35 @@ import RichTextEditor from '@/components/shared/RichTextEditor';
 // --- Schemas ---
 
 const optionSchema = z.object({
-  text: z.string().min(1, 'Option text is required'),
+  text: z.string().optional().or(z.literal('')),
   isCorrect: z.boolean().default(false),
 });
 
 const questionSchema = z.object({
   title: z.string().min(1, 'Question title is required'),
   type: z.enum(['radio', 'checkbox', 'text']),
-  score: z.coerce.number().min(1).default(1),
-  options: z.array(optionSchema).optional(),
-}).refine((data) => {
-  if (data.type !== 'text') {
-    return (data.options?.length ?? 0) >= 2;
-  }
-  return true;
-}, {
-  message: "At least 2 options are required for MCQ/Checkbox questions",
-  path: ["options"],
+  score: z.coerce.number().min(0).default(1),
+  options: z.array(optionSchema).optional().default([]),
 });
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  totalCandidates: z.coerce.number().min(1),
-  totalSlots: z.string().min(1, 'Total slots is required'),
-  questionSets: z.string().min(1, 'Question sets is required'),
-  questionType: z.string().min(1, 'Question type is required'),
+  totalCandidates: z.coerce.number().min(1, 'At least 1 candidate is required'),
+  totalSlots: z.string().optional().default(''),
+  questionSets: z.string().optional().default(''),
+  questionType: z.string().optional().default(''),
   startTime: z.string().min(1, 'Start time is required'),
   endTime: z.string().min(1, 'End time is required'),
-  duration: z.coerce.number().min(1),
-  questions: z.array(questionSchema).min(0),
+  duration: z.coerce.number().min(1, 'Duration is required'),
+  questions: z.array(questionSchema).optional().default([]),
+}).refine(data => {
+  if (data.startTime && data.endTime) {
+    return new Date(data.endTime) > new Date(data.startTime);
+  }
+  return true;
+}, {
+  message: "End time must be after start time",
+  path: ["endTime"]
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -133,14 +134,16 @@ function QuestionCard({ index, question, onEdit, onRemove }: QuestionCardProps) 
         <div className="flex items-center justify-between pt-6 border-t border-slate-50">
           <Button
             variant="ghost"
-            className="text-primary font-bold text-sm gap-2 hover:bg-slate-50 px-0"
+            size="sm"
+            className="text-primary hover:bg-primary/5"
             onClick={onEdit}
           >
             Edit
           </Button>
           <Button
             variant="ghost"
-            className="text-red-400 font-bold text-sm gap-2 hover:bg-red-50 px-0"
+            size="sm"
+            className="text-red-500 hover:bg-red-50"
             onClick={onRemove}
           >
             Remove From Exam
@@ -156,10 +159,11 @@ export default function CreateTestPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState<number | null>(null);
   const [modalErrors, setModalErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       title: '',
       totalCandidates: 1,
@@ -195,6 +199,10 @@ export default function CreateTestPage() {
   });
 
   const onSubmit = async (data: FormValues) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    const toastId = toast.loading('Updating online test...');
+
     try {
       const formattedData = {
         ...data,
@@ -205,9 +213,14 @@ export default function CreateTestPage() {
         }))
       };
       await axios.post('/api/tests', formattedData);
+      toast.success('Test updated successfully!', { id: toastId });
       router.push('/employer/dashboard');
-    } catch (error) {
-      console.error('Failed to create test', error);
+    } catch (error: any) {
+      console.error('Failed to update test', error);
+      const errorMessage = error.response?.data?.message || error.message || 'An unexpected error occurred';
+      toast.error(`Failed to update test: ${errorMessage}`, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -231,17 +244,6 @@ export default function CreateTestPage() {
     const errors: string[] = [];
     if (!stripHtml(currentModalQuestion.title).trim()) {
       errors.push("Question title is required.");
-    }
-    
-    if (currentModalQuestion.type !== 'text') {
-      const validOptions = currentModalQuestion.options.filter((o: any) => stripHtml(o.text).trim().length > 0);
-      if (validOptions.length < 2) {
-        errors.push("At least 2 options must have text for MCQ/Checkbox.");
-      }
-      const hasCorrect = currentModalQuestion.options.some((o: any) => o.isCorrect);
-      if (!hasCorrect) {
-        errors.push("Please select at least one correct answer.");
-      }
     }
 
     if (errors.length > 0) {
@@ -312,9 +314,9 @@ export default function CreateTestPage() {
               </div>
 
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/employer/dashboard')}
-                className="rounded-xl px-6 h-[44px] text-slate-600 font-bold border-slate-200 hover:bg-slate-50"
               >
                 Back to Dashboard
               </Button>
@@ -332,8 +334,9 @@ export default function CreateTestPage() {
                     <h2 className="text-lg font-bold text-[#1E293B]">Basic Information</h2>
                     <Button
                       variant="ghost"
+                      size="sm"
                       onClick={() => setStep(1)}
-                      className="text-primary font-bold text-sm gap-2 hover:bg-indigo-50 px-4"
+                      className="text-primary hover:bg-primary/5 gap-2"
                     >
                       <PencilLine size={16} /> Edit
                     </Button>
@@ -384,8 +387,7 @@ export default function CreateTestPage() {
                         <Input
                           {...register('title')}
                           placeholder="Enter online test title"
-                          className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4"
                         />
                         {errors.title && <p className="text-xs text-red-500 font-medium">{errors.title.message}</p>}
                       </div>
@@ -396,25 +398,24 @@ export default function CreateTestPage() {
                           type="number"
                           {...register('totalCandidates')}
                           placeholder="Enter total candidates"
-                          className="rounded-xl border-slate-200 focus:ring-primary focus:border-primary w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4"
                         />
                         {errors.totalCandidates && <p className="text-xs text-red-500 font-medium">{errors.totalCandidates.message}</p>}
                       </div>
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Slots <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('totalSlots', v)} defaultValue={watchAllFields.totalSlots}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                        <Select onValueChange={(v) => setValue('totalSlots', v as string)} defaultValue={watchAllFields.totalSlots}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select total slots" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">1 Slots</SelectItem>
-                            <SelectItem value="2">2 Slots</SelectItem>
+                            {/* <SelectItem value="2">2 Slots</SelectItem>
                             <SelectItem value="3">3 Slots</SelectItem>
                             <SelectItem value="4">4 Slots</SelectItem>
                             <SelectItem value="5">5 Slots</SelectItem>
-                            <SelectItem value="10">10 Slots</SelectItem>
+                            <SelectItem value="10">10 Slots</SelectItem> */}
                           </SelectContent>
                         </Select>
                         {errors.totalSlots && <p className="text-xs text-red-500 font-medium">{errors.totalSlots.message}</p>}
@@ -422,13 +423,13 @@ export default function CreateTestPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Total Question Set <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('questionSets', v)} defaultValue={watchAllFields.questionSets}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                        <Select onValueChange={(v) => setValue('questionSets', v as string)} defaultValue={watchAllFields.questionSets}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select total question set" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">1</SelectItem>
-                            <SelectItem value="2">2</SelectItem>
+                            {/* <SelectItem value="2">2</SelectItem> */}
                           </SelectContent>
                         </Select>
                         {errors.questionSets && <p className="text-xs text-red-500 font-medium">{errors.questionSets.message}</p>}
@@ -436,14 +437,14 @@ export default function CreateTestPage() {
 
                       <div className="space-y-2">
                         <Label className="text-sm font-bold text-slate-700">Question Type <span className="text-red-500">*</span></Label>
-                        <Select onValueChange={(v) => setValue('questionType', v)} defaultValue={watchAllFields.questionType}>
-                          <SelectTrigger className="w-full rounded-xl border-slate-200 focus:ring-primary focus:border-primary px-4" style={{ height: '56px' }}>
+                        <Select onValueChange={(v) => setValue('questionType', v as string)} defaultValue={watchAllFields.questionType}>
+                          <SelectTrigger className="h-14 w-full rounded-xl border-slate-200 px-4 focus:ring-primary focus:border-primary">
                             <SelectValue placeholder="Select question type" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="MCQ">MCQ</SelectItem>
-                            <SelectItem value="Checkbox">Checkbox</SelectItem>
-                            <SelectItem value="Subjective">Subjective</SelectItem>
+                            {/* <SelectItem value="Checkbox">Checkbox</SelectItem>
+                            <SelectItem value="Subjective">Subjective</SelectItem> */}
                           </SelectContent>
                         </Select>
                         {errors.questionType && <p className="text-xs text-red-500 font-medium">{errors.questionType.message}</p>}
@@ -454,8 +455,7 @@ export default function CreateTestPage() {
                         <Input
                           type="datetime-local"
                           {...register('startTime')}
-                          className="rounded-xl border-slate-200 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 px-4"
                         />
                         {errors.startTime && <p className="text-xs text-red-500 font-medium">{errors.startTime.message}</p>}
                       </div>
@@ -465,8 +465,7 @@ export default function CreateTestPage() {
                         <Input
                           type="datetime-local"
                           {...register('endTime')}
-                          className="rounded-xl border-slate-200 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 px-4"
                         />
                         {errors.endTime && <p className="text-xs text-red-500 font-medium">{errors.endTime.message}</p>}
                       </div>
@@ -477,8 +476,7 @@ export default function CreateTestPage() {
                           type="number"
                           {...register('duration')}
                           placeholder="Duration Time"
-                          className="rounded-xl border-slate-200 bg-slate-50 w-full"
-                          style={{ height: '56px', paddingLeft: '16px' }}
+                          className="h-14 w-full rounded-xl border-slate-200 bg-slate-50 px-4"
                         />
                         {errors.duration && <p className="text-xs text-red-500 font-medium">{errors.duration.message}</p>}
                       </div>
@@ -490,12 +488,17 @@ export default function CreateTestPage() {
                   <div className="p-6 md:p-8 flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                      size="xl"
+                      className="flex-1"
                       onClick={() => router.push('/employer/dashboard')}
                     >
                       Cancel
                     </Button>
                     <Button
+                      variant="default"
+                      size="xl"
+                      className="flex-1"
+                      disabled={isSubmitting}
                       onClick={async () => {
                         const isValid = await form.trigger(['title', 'totalCandidates', 'totalSlots', 'questionSets', 'questionType', 'startTime', 'endTime', 'duration']);
                         if (isValid) {
@@ -504,7 +507,6 @@ export default function CreateTestPage() {
                           console.log('Step 1 Errors:', errors);
                         }
                       }}
-                      className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
                     >
                       Save & Continue
                     </Button>
@@ -533,10 +535,12 @@ export default function CreateTestPage() {
                 {/* Add Question Button at the bottom */}
                 <div className="pt-4">
                   <Button
+                    variant="default"
+                    size="xl"
+                    className="w-full"
                     onClick={openAddModal}
-                    className="w-full bg-primary hover:bg-primary/90 text-white h-[56px] rounded-[16px] font-bold text-md shadow-lg shadow-indigo-100"
                   >
-                    Add Question
+                    <Plus className="mr-2" /> Add Question
                   </Button>
                 </div>
 
@@ -550,21 +554,25 @@ export default function CreateTestPage() {
                   <div className="flex justify-between gap-4">
                     <Button
                       variant="outline"
-                      className="rounded-xl px-12 h-[56px] text-slate-600 font-bold border-slate-200"
+                      size="xl"
+                      className="flex-1"
                       onClick={() => setStep(1)}
                     >
                       Cancel
                     </Button>
                     <Button
+                      variant="default"
+                      size="xl"
+                      className="flex-1"
+                      disabled={isSubmitting}
                       onClick={(e) => {
                         e.preventDefault();
                         form.handleSubmit(onSubmit, (err) => {
                           console.error('Validation Errors:', err);
                         })();
                       }}
-                      className="bg-primary hover:bg-primary/90 text-white px-12 h-[56px] rounded-xl font-bold shadow-lg shadow-indigo-100"
                     >
-                      Save & Continue
+                      {isSubmitting ? 'Updating...' : 'Save & Continue'}
                     </Button>
                   </div>
                 </div>
@@ -625,20 +633,23 @@ export default function CreateTestPage() {
               </div>
             </DialogHeader>
 
-            <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
+            <div className="p-6 pb-0">
               {modalErrors.length > 0 && (
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-2 text-red-600 font-bold text-sm">
-                    <AlertCircle size={16} />
-                    <span>Please fix the following to save:</span>
+                <div className="flex flex-col gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center gap-2 font-bold mb-1">
+                    <AlertCircle size={18} />
+                    <span>Requirement Missing</span>
                   </div>
-                  <ul className="list-disc pl-8 text-sm text-red-500 font-medium">
+                  <ul className="list-disc list-inside pl-1 space-y-1">
                     {modalErrors.map((err, i) => (
                       <li key={i}>{err}</li>
                     ))}
                   </ul>
                 </div>
               )}
+            </div>
+
+            <div className="p-6 space-y-8 overflow-y-auto max-h-[70vh]">
 
               <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-primary transition-all">
                 <RichTextEditor
@@ -704,7 +715,8 @@ export default function CreateTestPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="ml-10 text-primary font-bold text-sm gap-2 hover:bg-indigo-50"
+                    size="sm"
+                    className="ml-10 text-primary hover:bg-primary/5 gap-2"
                     onClick={() => {
                       setCurrentModalQuestion({
                         ...currentModalQuestion,
@@ -721,14 +733,15 @@ export default function CreateTestPage() {
             <div className="p-6 border-t flex justify-end gap-3 bg-slate-50/30">
               <Button
                 variant="outline"
+                size="default"
                 onClick={() => handleSaveQuestion(false)}
-                className="h-[48px] px-8 rounded-xl border-primary text-primary font-bold hover:bg-slate-50"
               >
                 Save
               </Button>
               <Button
+                variant="default"
+                size="default"
                 onClick={() => handleSaveQuestion(true)}
-                className="h-[48px] px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-indigo-100"
               >
                 Save & Add More
               </Button>
